@@ -1,36 +1,138 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# GastosApp - Control de Finanzas Personales
 
-## Getting Started
+Aplicación web para gestionar ingresos y gastos personales, pensada para usuarios argentinos. Incluye cotización del dólar en tiempo real, reportes con gráficos y exportación a Excel/PDF.
 
-First, run the development server:
+## Tecnologías
+
+- **Next.js 16** (App Router)
+- **TypeScript**
+- **Tailwind CSS 4**
+- **Supabase** (Auth + Base de datos + Realtime)
+- **Recharts** (Gráficos)
+- **jsPDF + xlsx** (Exportación)
+- **dolarapi.com** (Cotizaciones del dólar, sin API key)
+
+## Características
+
+- Autenticación con Supabase Auth (registro + login)
+- Dashboard con resumen del mes (ingresos, gastos, balance, USD equivalente)
+- Gestión de transacciones (CRUD) con filtros, búsqueda y paginación
+- Gestión de categorías con colores personalizados
+- Reportes con gráficos de barras, líneas y torta por categoría
+- Exportación a Excel y PDF
+- Cotización de todos los tipos de dólar (oficial, blue, MEP, CCL, cripto)
+- Calculadora de USD posibles según superávit mensual
+- Sincronización en tiempo real con Supabase Realtime
+- Diseño responsive y mobile-friendly
+
+## Configuración inicial
+
+### 1. Clonar e instalar dependencias
+
+```bash
+git clone <repo-url>
+cd gastos-app
+npm install
+```
+
+### 2. Crear proyecto en Supabase
+
+1. Ir a [supabase.com](https://supabase.com) y crear una cuenta
+2. Crear un nuevo proyecto
+3. Ir a **Settings > API** y copiar:
+   - `Project URL`
+   - `anon public key`
+
+### 3. Configurar variables de entorno
+
+Editar el archivo `.env.local` en la raíz del proyecto:
+
+```env
+NEXT_PUBLIC_SUPABASE_URL=https://xxxxxxxxxxxx.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+```
+
+### 4. Crear las tablas en Supabase
+
+1. Ir al dashboard de Supabase
+2. Ir a **SQL Editor**
+3. Copiar y ejecutar el contenido de `supabase/migrations/001_schema.sql`
+
+### 5. (Opcional) Habilitar Realtime
+
+En Supabase Dashboard:
+1. Ir a **Database > Replication**
+2. Activar `transactions` y `categories` en la publicación `supabase_realtime`
+
+### 6. Configurar autenticación
+
+En Supabase Dashboard:
+1. Ir a **Authentication > Email Templates** para personalizar los emails
+2. En **Authentication > URL Configuration**, agregar `http://localhost:3000` como URL de redirección
+3. Para producción, también agregar tu dominio de producción
+
+### 7. Ejecutar en desarrollo
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Abrir [http://localhost:3000](http://localhost:3000)
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Estructura del proyecto
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```
+app/
+  (app)/              # Rutas protegidas (requieren auth)
+    layout.tsx        # Layout con sidebar y header
+    dashboard/        # Página principal con resumen
+    transacciones/    # Gestión de transacciones
+    categorias/       # Gestión de categorías
+    reportes/         # Gráficos y reportes
+    dolar/            # Cotizaciones del dólar
+  login/              # Página de login
+  register/           # Página de registro
+  layout.tsx          # Layout raíz
+  page.tsx            # Redirección inicial
+components/
+  Sidebar.tsx         # Barra lateral de navegación
+  Header.tsx          # Header con nombre de página
+  TransactionForm.tsx # Modal para crear/editar transacciones
+  CategoryForm.tsx    # Modal para crear/editar categorías
+  ExpenseChart.tsx    # Componentes de gráficos (Recharts)
+  DollarCard.tsx      # Tarjeta de cotización de dólar
+lib/
+  supabase/
+    client.ts         # Cliente Supabase para el browser
+    server.ts         # Cliente Supabase para el servidor
+    middleware.ts     # Middleware de autenticación
+  dolar.ts            # Fetching de cotizaciones dolarapi.com
+  export.ts           # Funciones de exportación Excel/PDF
+  types.ts            # TypeScript types
+middleware.ts         # Middleware de Next.js para proteger rutas
+supabase/
+  migrations/
+    001_schema.sql    # Schema SQL completo
+```
 
-## Learn More
+## Deploy en Vercel
 
-To learn more about Next.js, take a look at the following resources:
+1. Hacer fork o subir el código a GitHub
+2. Ir a [vercel.com](https://vercel.com) y crear un nuevo proyecto
+3. Conectar el repositorio de GitHub
+4. Agregar las variables de entorno en Vercel:
+   - `NEXT_PUBLIC_SUPABASE_URL`
+   - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+5. Hacer deploy
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## API de Dólar
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Este proyecto usa [dolarapi.com](https://dolarapi.com) que es gratuita y no requiere API key.
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Endpoints utilizados:
+- `GET https://dolarapi.com/v1/dolares` - Todos los tipos de cambio
+- `GET https://dolarapi.com/v1/dolares/oficial` - Dólar oficial
+- `GET https://dolarapi.com/v1/dolares/blue` - Dólar blue
+- `GET https://dolarapi.com/v1/dolares/bolsa` - Dólar MEP
+- `GET https://dolarapi.com/v1/dolares/contadoconliqui` - CCL
+- `GET https://dolarapi.com/v1/dolares/cripto` - Dólar cripto (USDT)
