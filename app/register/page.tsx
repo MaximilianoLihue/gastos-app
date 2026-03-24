@@ -4,25 +4,8 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
+import { seedDefaultCategories } from '@/lib/defaultCategories'
 import { TrendingUp, Mail, Lock, Loader2, Eye, EyeOff, CheckCircle } from 'lucide-react'
-
-const DEFAULT_CATEGORIES = [
-  // Gastos
-  { name: 'Alimentación', color: '#f59e0b', type: 'gasto' },
-  { name: 'Transporte', color: '#3b82f6', type: 'gasto' },
-  { name: 'Salud', color: '#ef4444', type: 'gasto' },
-  { name: 'Entretenimiento', color: '#8b5cf6', type: 'gasto' },
-  { name: 'Educación', color: '#06b6d4', type: 'gasto' },
-  { name: 'Hogar', color: '#f97316', type: 'gasto' },
-  { name: 'Ropa', color: '#ec4899', type: 'gasto' },
-  { name: 'Servicios', color: '#6366f1', type: 'gasto' },
-  { name: 'Otros gastos', color: '#6b7280', type: 'gasto' },
-  // Ingresos
-  { name: 'Sueldo', color: '#10b981', type: 'ingreso' },
-  { name: 'Freelance', color: '#14b8a6', type: 'ingreso' },
-  { name: 'Inversiones', color: '#84cc16', type: 'ingreso' },
-  { name: 'Otros ingresos', color: '#a3a3a3', type: 'ingreso' },
-]
 
 export default function RegisterPage() {
   const router = useRouter()
@@ -67,13 +50,8 @@ export default function RegisterPage() {
         return
       }
 
-      // Create default categories if user was created
       if (data.user) {
-        const categoriesToInsert = DEFAULT_CATEGORIES.map((cat) => ({
-          ...cat,
-          user_id: data.user!.id,
-        }))
-        await supabase.from('categories').insert(categoriesToInsert)
+        await seedDefaultCategories(supabase, data.user.id)
       }
 
       setSuccess(true)

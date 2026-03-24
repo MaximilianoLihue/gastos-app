@@ -11,6 +11,8 @@ import {
   ArrowUpRight,
   ArrowDownRight,
   Receipt,
+  AlertTriangle,
+  Sparkles,
 } from 'lucide-react'
 import Link from 'next/link'
 
@@ -48,10 +50,10 @@ export default async function DashboardPage() {
     .lte('date', thisMonthEnd)
     .order('date', { ascending: false })
 
-  // Fetch transactions for last month (for comparison)
+  // Fetch transactions for last month (for comparison + alerts)
   const { data: lastMonthTxs } = await supabase
     .from('transactions')
-    .select('amount, type')
+    .select('amount, type, category:categories(name, color)')
     .gte('date', lastMonthStart)
     .lte('date', lastMonthEnd)
 
@@ -100,6 +102,81 @@ export default async function DashboardPage() {
     : 0
 
   const stats: DashboardStats = { totalIngresos, totalGastos, balance, surplus }
+
+  // Top spending categories this month
+  const gastosPorCategoria = transactions
+    .filter(t => t.type === 'gasto')
+    .reduce((acc, t) => {
+      const key = t.category?.name ?? 'Sin categoría'
+      const color = t.category?.color ?? '#6b7280'
+      if (!acc[key]) acc[key] = { name: key, color, total: 0 }
+      acc[key].total += Number(t.amount)
+      return acc
+    }, {} as Record<string, { name: string; color: string; total: number }>)
+
+  const topCategorias = Object.values(gastosPorCategoria)
+    .sort((a, b) => b.total - a.total)
+    .slice(0, 6)
+
+  // Spending alerts — compare this month vs last month by category
+  type LastTx = { amount: number; type: string; category?: { name: string; color: string } | null }
+  const gastosPorCatMesAnterior = (lastMonthTxs as LastTx[] ?? [])
+    .filter(t => t.type === 'gasto')
+    .reduce((acc, t) => {
+      const key = t.category?.name ?? 'Sin categoría'
+      acc[key] = (acc[key] ?? 0) + Number(t.amount)
+      return acc
+    }, {} as Record<string, number>)
+
+  interface SpendingAlert {
+    category: string
+    color: string
+    thisMonth: number
+    lastMonth: number
+    pctOfTotal: number
+    pctChange: number
+    type: 'spike' | 'high_share' | 'new'
+    message: string
+  }
+
+  const alerts: SpendingAlert[] = []
+
+  for (const [name, data] of Object.entries(gastosPorCategoria)) {
+    const last = gastosPorCatMesAnterior[name] ?? 0
+    const pctOfTotal = totalGastos > 0 ? (data.total / totalGastos) * 100 : 0
+    const pctChange = last > 0 ? ((data.total - last) / last) * 100 : 0
+
+    // Alert: category spiked more than 30% vs last month
+    if (last > 0 && pctChange >= 30 && data.total > 5000) {
+      alerts.push({
+        category: name, color: data.color,
+        thisMonth: data.total, lastMonth: last,
+        pctOfTotal, pctChange, type: 'spike',
+        message: `Subió ${pctChange.toFixed(0)}% respecto al mes pasado`,
+      })
+    }
+    // Alert: category represents more than 35% of total spending
+    else if (pctOfTotal >= 35 && data.total > 5000) {
+      alerts.push({
+        category: name, color: data.color,
+        thisMonth: data.total, lastMonth: last,
+        pctOfTotal, pctChange, type: 'high_share',
+        message: `Representa el ${pctOfTotal.toFixed(0)}% de tus gastos del mes`,
+      })
+    }
+    // Alert: new category this month (wasn't in last month) with significant amount
+    else if (last === 0 && pctOfTotal >= 15 && data.total > 5000) {
+      alerts.push({
+        category: name, color: data.color,
+        thisMonth: data.total, lastMonth: 0,
+        pctOfTotal, pctChange, type: 'new',
+        message: `Gasto nuevo este mes — ${pctOfTotal.toFixed(0)}% de tus gastos totales`,
+      })
+    }
+  }
+
+  // Sort by most impactful
+  alerts.sort((a, b) => b.thisMonth - a.thisMonth)
 
   const mesActual = format(now, 'MMMM yyyy', { locale: es })
 
@@ -216,6 +293,115 @@ export default async function DashboardPage() {
           </p>
         </div>
       </div>
+
+      {/* Top spending categories */}
+      {topCategorias.length > 0 && (
+        <div className="bg-gray-800/50 border border-gray-700/50 rounded-2xl p-6">
+          <div className="flex items-center justify-between mb-5">
+            <h3 className="text-white font-semibold">¿En qué gasto más?</h3>
+            <span className="text-gray-500 text-xs capitalize">{mesActual}</span>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {topCategorias.map((cat, i) => {
+              const pct = totalGastos > 0 ? (cat.total / totalGastos) * 100 : 0
+              return (
+                <div key={cat.name} className="space-y-1.5">
+                  <div className="flex items-center justify-between text-sm">
+                    <div className="flex items-center gap-2 min-w-0">
+                      <span className="text-gray-500 text-xs w-4 flex-shrink-0">#{i + 1}</span>
+                      <div className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ backgroundColor: cat.color }} />
+                      <span className="text-gray-300 truncate">{cat.name}</span>
+                    </div>
+                    <div className="text-right flex-shrink-0 ml-2">
+                      <span className="text-white font-semibold">{formatARS(cat.total)}</span>
+                      <span className="text-gray-500 text-xs ml-1.5">{pct.toFixed(1)}%</span>
+                    </div>
+                  </div>
+                  <div className="h-1.5 bg-gray-700 rounded-full overflow-hidden">
+                    <div
+                      className="h-full rounded-full transition-all duration-700"
+                      style={{ width: `${pct}%`, backgroundColor: cat.color }}
+                    />
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+          {totalGastos > 0 && (
+            <div className="mt-4 pt-4 border-t border-gray-700/50 flex justify-between text-sm">
+              <span className="text-gray-500">Total gastado este mes</span>
+              <span className="text-red-400 font-semibold">{formatARS(totalGastos)}</span>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Spending alerts */}
+      {alerts.length > 0 && (
+        <div className="bg-gray-800/50 border border-gray-700/50 rounded-2xl p-6">
+          <div className="flex items-center gap-2 mb-5">
+            <AlertTriangle className="w-5 h-5 text-amber-400" />
+            <h3 className="text-white font-semibold">Señales de gasto</h3>
+            <span className="ml-auto text-gray-500 text-xs capitalize">{mesActual}</span>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {alerts.map((alert) => {
+              const isSpike = alert.type === 'spike'
+              const isHighShare = alert.type === 'high_share'
+              const isNew = alert.type === 'new'
+
+              const borderColor = isSpike
+                ? 'border-red-500/30'
+                : isHighShare
+                ? 'border-amber-500/30'
+                : 'border-blue-500/30'
+
+              const bgColor = isSpike
+                ? 'bg-red-500/5'
+                : isHighShare
+                ? 'bg-amber-500/5'
+                : 'bg-blue-500/5'
+
+              const Icon = isSpike ? TrendingUp : isHighShare ? AlertTriangle : Sparkles
+              const iconColor = isSpike
+                ? 'text-red-400'
+                : isHighShare
+                ? 'text-amber-400'
+                : 'text-blue-400'
+
+              const suggestion = isSpike
+                ? `Revisá si podés reducir gastos en ${alert.category}.`
+                : isHighShare
+                ? `${alert.category} consume una parte grande de tu presupuesto.`
+                : `Primera vez que gastás en ${alert.category} este mes.`
+
+              return (
+                <div
+                  key={alert.category}
+                  className={`border ${borderColor} ${bgColor} rounded-xl p-4 space-y-2`}
+                >
+                  <div className="flex items-center gap-2">
+                    <div
+                      className="w-2.5 h-2.5 rounded-full flex-shrink-0"
+                      style={{ backgroundColor: alert.color }}
+                    />
+                    <span className="text-white font-medium text-sm">{alert.category}</span>
+                    <Icon className={`w-4 h-4 ml-auto flex-shrink-0 ${iconColor}`} />
+                  </div>
+                  <p className={`text-xs font-semibold ${iconColor}`}>{alert.message}</p>
+                  <div className="flex items-center justify-between text-xs text-gray-400">
+                    <span>Este mes: <span className="text-white font-medium">{formatARS(alert.thisMonth)}</span></span>
+                    {alert.lastMonth > 0 && (
+                      <span>Anterior: <span className="text-gray-300">{formatARS(alert.lastMonth)}</span></span>
+                    )}
+                  </div>
+                  <p className="text-gray-500 text-xs">{suggestion}</p>
+                </div>
+              )
+            })}
+          </div>
+        </div>
+      )}
 
       {/* Bottom grid */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">

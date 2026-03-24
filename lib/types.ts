@@ -54,3 +54,17 @@ export interface CategoryData {
   value: number
   color: string
 }
+
+export interface RecurringTransaction {
+  id: string
+  user_id: string
+  description: string
+  amount: number
+  category_id: string | null
+  type: TransactionType
+  day_of_month: number
+  active: boolean
+  end_date: string | null
+  created_at: string
+  category?: Category
+}

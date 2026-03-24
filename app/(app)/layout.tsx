@@ -2,6 +2,7 @@ import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import Sidebar from '@/components/Sidebar'
 import Header from '@/components/Header'
+import RecurringTrigger from '@/components/RecurringTrigger'
 
 export default async function AppLayout({
   children,
@@ -22,6 +23,7 @@ export default async function AppLayout({
       <Sidebar userEmail={user.email} />
       <div className="flex-1 flex flex-col lg:ml-64 min-h-screen">
         <Header userEmail={user.email} />
+        <RecurringTrigger />
         <main className="flex-1 p-6 overflow-auto">{children}</main>
       </div>
     </div>

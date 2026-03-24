@@ -12,6 +12,8 @@ import {
   Menu,
   LogOut,
   TrendingUp,
+  RefreshCw,
+  Target,
 } from 'lucide-react'
 import { useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
@@ -19,6 +21,8 @@ import { createClient } from '@/lib/supabase/client'
 const navItems = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { href: '/transacciones', label: 'Transacciones', icon: ArrowLeftRight },
+  { href: '/recurrentes', label: 'Recurrentes', icon: RefreshCw },
+  { href: '/metas', label: 'Metas', icon: Target },
   { href: '/categorias', label: 'Categorías', icon: Tag },
   { href: '/reportes', label: 'Reportes', icon: BarChart3 },
   { href: '/dolar', label: 'Dólar', icon: DollarSign },
