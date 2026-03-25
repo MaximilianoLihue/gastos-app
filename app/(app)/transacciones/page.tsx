@@ -118,6 +118,12 @@ function downloadTemplate() {
   XLSX.writeFile(wb, 'plantilla-gastos.xlsx')
 }
 
+function txKey(date: string, description: string | null, type: string, amount: number): string {
+  const desc = String(description ?? '').toLowerCase().replace(/\s+/g, ' ').trim()
+  const amt = Number(amount).toFixed(2)
+  return `${date}__${desc}__${type}__${amt}`
+}
+
 async function filterDuplicates(
   supabase: ReturnType<typeof createClient>,
   rows: { date: string; description: string | null; type: string; amount: number }[]
@@ -129,10 +135,10 @@ async function filterDuplicates(
     .select('date, description, type, amount')
     .in('date', dates)
   const existingKeys = new Set(
-    (existing ?? []).map(t => `${t.date}__${String(t.description ?? '').toLowerCase()}__${t.type}__${Number(t.amount)}`)
+    (existing ?? []).map(t => txKey(t.date, t.description, t.type, t.amount))
   )
   return rows
-    .map((r, i) => ({ i, key: `${r.date}__${String(r.description ?? '').toLowerCase()}__${r.type}__${r.amount}` }))
+    .map((r, i) => ({ i, key: txKey(r.date, r.description, r.type, r.amount) }))
     .filter(({ key }) => existingKeys.has(key))
     .map(({ i }) => i)
 }
