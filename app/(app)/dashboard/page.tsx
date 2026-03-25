@@ -120,7 +120,7 @@ export default async function DashboardPage() {
 
   // Spending alerts — compare this month vs last month by category
   type LastTx = { amount: number; type: string; category?: { name: string; color: string } | null }
-  const gastosPorCatMesAnterior = (lastMonthTxs as LastTx[] ?? [])
+  const gastosPorCatMesAnterior = ((lastMonthTxs ?? []) as unknown as LastTx[])
     .filter(t => t.type === 'gasto')
     .reduce((acc, t) => {
       const key = t.category?.name ?? 'Sin categoría'

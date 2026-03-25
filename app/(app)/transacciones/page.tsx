@@ -5,6 +5,7 @@ import { createClient } from '@/lib/supabase/client'
 import { Transaction } from '@/lib/types'
 import TransactionForm from '@/components/TransactionForm'
 import { exportToExcel, exportToPDF } from '@/lib/export'
+import { parseMercadoPagoPDF } from '@/lib/parsePDF'
 import * as XLSX from 'xlsx'
 import {
   Plus,
@@ -144,6 +145,7 @@ export default function TransaccionesPage() {
   const [importing, setImporting] = useState(false)
   const [importResult, setImportResult] = useState<ImportResult | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const pdfInputRef = useRef<HTMLInputElement>(null)
   const [quickCatTx, setQuickCatTx] = useState<string | null>(null)
   const [savingCatTx, setSavingCatTx] = useState<string | null>(null)
   const [allCategories, setAllCategories] = useState<{ id: string; name: string; color: string; type: string }[]>([])
@@ -449,6 +451,71 @@ export default function TransaccionesPage() {
     }
   }
 
+  async function handleImportPDF(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    if (!file) return
+    e.target.value = ''
+    setImporting(true)
+    setImportResult(null)
+
+    try {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) return
+
+      const parsed = await parseMercadoPagoPDF(file)
+      const result: ImportResult = { total: parsed.length, imported: 0, errors: [] }
+
+      if (parsed.length === 0) {
+        result.errors.push('No se encontraron transacciones en el PDF. Verificá que sea un resumen de Mercado Pago.')
+        setImportResult(result)
+        return
+      }
+
+      // Load categories cache
+      const { data: existingCats } = await supabase
+        .from('categories').select('id, name, type').eq('user_id', user.id)
+
+      const catCache: Record<string, string> = {}
+      for (const c of existingCats ?? []) {
+        catCache[`${c.name.toLowerCase()}__${c.type}`] = c.id
+      }
+
+      const ensureCategory = async (name: string, type: 'ingreso' | 'gasto', color: string): Promise<string> => {
+        const key = `${name.toLowerCase()}__${type}`
+        if (catCache[key]) return catCache[key]
+        const { data } = await supabase.from('categories')
+          .insert({ user_id: user.id, name, type, color })
+          .select('id').single()
+        if (data?.id) catCache[key] = data.id
+        return data?.id ?? ''
+      }
+
+      const toInsert: object[] = []
+      for (const tx of parsed) {
+        let category_id: string | null = null
+        const guessed = guessCategory(tx.description)
+        if (guessed) {
+          category_id = await ensureCategory(guessed.category, tx.type, guessed.color) || null
+        }
+        toInsert.push({ user_id: user.id, date: tx.date, type: tx.type, amount: tx.amount, description: tx.description, category_id })
+      }
+
+      const { error } = await supabase.from('transactions').insert(toInsert)
+      if (error) {
+        result.errors.push(`Error al guardar: ${error.message}`)
+      } else {
+        result.imported = toInsert.length
+        load()
+      }
+
+      setImportResult(result)
+    } catch (err) {
+      setImportResult({ total: 0, imported: 0, errors: [`Error al leer el PDF: ${String(err)}`] })
+    } finally {
+      setImporting(false)
+    }
+  }
+
   const totalPages = Math.ceil(total / PAGE_SIZE)
 
   return (
@@ -495,6 +562,13 @@ export default function TransaccionesPage() {
             className="hidden"
             onChange={handleImportExcel}
           />
+          <input
+            ref={pdfInputRef}
+            type="file"
+            accept=".pdf"
+            className="hidden"
+            onChange={handleImportPDF}
+          />
           <button
             onClick={downloadTemplate}
             className="flex items-center gap-2 px-3 py-2 rounded-xl border border-gray-600 text-gray-300 hover:bg-gray-700/50 text-sm transition-colors"
@@ -510,7 +584,16 @@ export default function TransaccionesPage() {
             title="Importar desde Excel"
           >
             <Upload className="w-4 h-4 text-yellow-400" />
-            <span className="hidden sm:inline">{importing ? 'Importando...' : 'Importar'}</span>
+            <span className="hidden sm:inline">{importing ? 'Importando...' : 'Excel'}</span>
+          </button>
+          <button
+            onClick={() => pdfInputRef.current?.click()}
+            disabled={importing}
+            className="flex items-center gap-2 px-3 py-2 rounded-xl border border-gray-600 text-gray-300 hover:bg-gray-700/50 text-sm transition-colors disabled:opacity-50"
+            title="Importar PDF Mercado Pago"
+          >
+            <Upload className="w-4 h-4 text-red-400" />
+            <span className="hidden sm:inline">{importing ? 'Importando...' : 'PDF MP'}</span>
           </button>
           <button
             onClick={handleExportExcel}
