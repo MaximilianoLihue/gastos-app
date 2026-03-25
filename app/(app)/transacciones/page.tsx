@@ -118,6 +118,25 @@ function downloadTemplate() {
   XLSX.writeFile(wb, 'plantilla-gastos.xlsx')
 }
 
+async function filterDuplicates(
+  supabase: ReturnType<typeof createClient>,
+  rows: { date: string; description: string | null; type: string; amount: number }[]
+): Promise<number[]> {
+  if (rows.length === 0) return []
+  const dates = [...new Set(rows.map(r => r.date))]
+  const { data: existing } = await supabase
+    .from('transactions')
+    .select('date, description, type, amount')
+    .in('date', dates)
+  const existingKeys = new Set(
+    (existing ?? []).map(t => `${t.date}__${String(t.description ?? '').toLowerCase()}__${t.type}__${Number(t.amount)}`)
+  )
+  return rows
+    .map((r, i) => ({ i, key: `${r.date}__${String(r.description ?? '').toLowerCase()}__${r.type}__${r.amount}` }))
+    .filter(({ key }) => existingKeys.has(key))
+    .map(({ i }) => i)
+}
+
 function formatARS(value: number): string {
   return new Intl.NumberFormat('es-AR', {
     style: 'currency',
@@ -434,12 +453,18 @@ export default function TransaccionesPage() {
       }
 
       if (toInsert.length > 0) {
-        const { error } = await supabase.from('transactions').insert(toInsert)
-        if (error) {
-          result.errors.push(`Error al guardar: ${error.message}`)
-        } else {
-          result.imported = toInsert.length
-          load()
+        const dupIndexes = new Set(await filterDuplicates(supabase, toInsert as { date: string; description: string | null; type: string; amount: number }[]))
+        const unique = toInsert.filter((_, i) => !dupIndexes.has(i))
+        const skipped = toInsert.length - unique.length
+        if (skipped > 0) result.errors.push(`${skipped} transacción(es) ya existían y fueron omitidas`)
+        if (unique.length > 0) {
+          const { error } = await supabase.from('transactions').insert(unique)
+          if (error) {
+            result.errors.push(`Error al guardar: ${error.message}`)
+          } else {
+            result.imported = unique.length
+            load()
+          }
         }
       }
 
@@ -500,12 +525,18 @@ export default function TransaccionesPage() {
         toInsert.push({ user_id: user.id, date: tx.date, type: tx.type, amount: tx.amount, description: tx.description, category_id })
       }
 
-      const { error } = await supabase.from('transactions').insert(toInsert)
-      if (error) {
-        result.errors.push(`Error al guardar: ${error.message}`)
-      } else {
-        result.imported = toInsert.length
-        load()
+      const dupIndexes = new Set(await filterDuplicates(supabase, toInsert as { date: string; description: string | null; type: string; amount: number }[]))
+      const unique = toInsert.filter((_, i) => !dupIndexes.has(i))
+      const skipped = toInsert.length - unique.length
+      if (skipped > 0) result.errors.push(`${skipped} transacción(es) ya existían y fueron omitidas`)
+      if (unique.length > 0) {
+        const { error } = await supabase.from('transactions').insert(unique)
+        if (error) {
+          result.errors.push(`Error al guardar: ${error.message}`)
+        } else {
+          result.imported = unique.length
+          load()
+        }
       }
 
       setImportResult(result)
