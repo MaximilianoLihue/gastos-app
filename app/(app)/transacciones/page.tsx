@@ -169,6 +169,7 @@ export default function TransaccionesPage() {
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null)
   const [importing, setImporting] = useState(false)
   const [importResult, setImportResult] = useState<ImportResult | null>(null)
+  const [cleaning, setCleaning] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const pdfInputRef = useRef<HTMLInputElement>(null)
   const [quickCatTx, setQuickCatTx] = useState<string | null>(null)
@@ -553,6 +554,46 @@ export default function TransaccionesPage() {
     }
   }
 
+  async function handleCleanDuplicates() {
+    setCleaning(true)
+    try {
+      // Fetch all transactions for the user
+      const { data: all } = await supabase
+        .from('transactions')
+        .select('id, date, description, type, amount')
+        .order('created_at', { ascending: true }) // keep the oldest
+
+      if (!all || all.length === 0) return
+
+      const seen = new Set<string>()
+      const toDelete: string[] = []
+
+      for (const t of all) {
+        const key = txKey(t.date, t.description, t.type, t.amount)
+        if (seen.has(key)) {
+          toDelete.push(t.id)
+        } else {
+          seen.add(key)
+        }
+      }
+
+      if (toDelete.length === 0) {
+        setImportResult({ total: 0, imported: 0, errors: ['No se encontraron duplicados.'] })
+        return
+      }
+
+      // Delete in batches of 50
+      for (let i = 0; i < toDelete.length; i += 50) {
+        await supabase.from('transactions').delete().in('id', toDelete.slice(i, i + 50))
+      }
+
+      setImportResult({ total: toDelete.length, imported: toDelete.length, errors: [] })
+      load()
+    } finally {
+      setCleaning(false)
+    }
+  }
+
   const totalPages = Math.ceil(total / PAGE_SIZE)
 
   return (
@@ -606,6 +647,15 @@ export default function TransaccionesPage() {
             className="hidden"
             onChange={handleImportPDF}
           />
+          <button
+            onClick={handleCleanDuplicates}
+            disabled={cleaning || importing}
+            className="flex items-center gap-2 px-3 py-2 rounded-xl border border-orange-600/50 text-orange-400 hover:bg-orange-500/10 text-sm transition-colors disabled:opacity-50"
+            title="Eliminar transacciones duplicadas"
+          >
+            <X className="w-4 h-4" />
+            <span className="hidden sm:inline">{cleaning ? 'Limpiando...' : 'Duplicados'}</span>
+          </button>
           <button
             onClick={downloadTemplate}
             className="flex items-center gap-2 px-3 py-2 rounded-xl border border-gray-600 text-gray-300 hover:bg-gray-700/50 text-sm transition-colors"
@@ -971,10 +1021,12 @@ export default function TransaccionesPage() {
               )}
               <div>
                 <p className="text-white font-medium">
-                  {importResult.imported} de {importResult.total} transacciones importadas
+                  {cleaning
+                    ? `${importResult.imported} duplicados eliminados`
+                    : `${importResult.imported} de ${importResult.total} transacciones importadas`}
                 </p>
                 {importResult.errors.length > 0 && (
-                  <p className="text-gray-400 text-sm">{importResult.errors.length} filas con errores</p>
+                  <p className="text-gray-400 text-sm">{importResult.errors[0]}</p>
                 )}
               </div>
             </div>
