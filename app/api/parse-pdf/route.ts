@@ -25,13 +25,14 @@ export async function POST(req: NextRequest) {
 
     const buffer = Buffer.from(await file.arrayBuffer())
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const pdfParse = ((await import('pdf-parse')) as any).default
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const pdfParse = require('pdf-parse')
     const data = await pdfParse(buffer)
     const text: string = data.text
 
-    // Pattern: DD-MM-YYYY  description  opId(10+digits)  $ value  $ balance
-    const rowRegex = /(\d{2}-\d{2}-\d{4})\s+([\s\S]+?)\s+(\d{10,})\s+\$\s*(-?[\d.,]+)\s+\$\s*[\d.,]+/g
+    // Mercado Pago format: date on its own line, description on next line(s),
+    // then opId$value$balance all on one line (no spaces between opId and $)
+    const rowRegex = /(\d{2}-\d{2}-\d{4})\n([\s\S]+?)\n(\d{10,})\$\s*(-?[\d.,]+)\$\s*[\d.,]+/g
 
     const results: ParsedPDFTransaction[] = []
     let match: RegExpExecArray | null
