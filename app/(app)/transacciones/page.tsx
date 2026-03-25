@@ -170,6 +170,7 @@ export default function TransaccionesPage() {
   const [importing, setImporting] = useState(false)
   const [importResult, setImportResult] = useState<ImportResult | null>(null)
   const [cleaning, setCleaning] = useState(false)
+  const [cleanResult, setCleanResult] = useState<{ deleted: number } | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const pdfInputRef = useRef<HTMLInputElement>(null)
   const [quickCatTx, setQuickCatTx] = useState<string | null>(null)
@@ -578,7 +579,7 @@ export default function TransaccionesPage() {
       }
 
       if (toDelete.length === 0) {
-        setImportResult({ total: 0, imported: 0, errors: ['No se encontraron duplicados.'] })
+        setCleanResult({ deleted: 0 })
         return
       }
 
@@ -587,7 +588,7 @@ export default function TransaccionesPage() {
         await supabase.from('transactions').delete().in('id', toDelete.slice(i, i + 50))
       }
 
-      setImportResult({ total: toDelete.length, imported: toDelete.length, errors: [] })
+      setCleanResult({ deleted: toDelete.length })
       load()
     } finally {
       setCleaning(false)
@@ -1049,6 +1050,39 @@ export default function TransaccionesPage() {
               className="mt-4 w-full py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-white text-sm font-medium transition-colors"
             >
               Cerrar
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Clean duplicates result modal */}
+      {cleanResult !== null && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-gray-800 border border-gray-700 rounded-2xl p-6 w-full max-w-sm shadow-xl text-center">
+            {cleanResult.deleted > 0 ? (
+              <>
+                <div className="w-14 h-14 rounded-full bg-emerald-500/15 flex items-center justify-center mx-auto mb-4">
+                  <CheckCircle className="w-7 h-7 text-emerald-400" />
+                </div>
+                <h3 className="text-white font-semibold text-lg mb-1">¡Listo!</h3>
+                <p className="text-gray-400 text-sm">
+                  Se eliminaron <span className="text-white font-semibold">{cleanResult.deleted}</span> transacciones duplicadas correctamente.
+                </p>
+              </>
+            ) : (
+              <>
+                <div className="w-14 h-14 rounded-full bg-blue-500/15 flex items-center justify-center mx-auto mb-4">
+                  <CheckCircle className="w-7 h-7 text-blue-400" />
+                </div>
+                <h3 className="text-white font-semibold text-lg mb-1">Sin duplicados</h3>
+                <p className="text-gray-400 text-sm">No se encontraron transacciones duplicadas.</p>
+              </>
+            )}
+            <button
+              onClick={() => setCleanResult(null)}
+              className="mt-5 w-full py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-white text-sm font-medium transition-colors"
+            >
+              OK
             </button>
           </div>
         </div>
