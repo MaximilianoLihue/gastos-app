@@ -19,9 +19,8 @@ function parseARSAmount(str: string): number {
 export async function parseMercadoPagoPDF(file: File): Promise<ParsedPDFTransaction[]> {
   const pdfjsLib = await import('pdfjs-dist')
 
-  // Use CDN worker to avoid Next.js webpack/worker config issues
-  pdfjsLib.GlobalWorkerOptions.workerSrc =
-    `//cdn.jsdelivr.net/npm/pdfjs-dist@${pdfjsLib.version}/build/pdf.worker.min.js`
+  // Use local worker file (copied to /public during build)
+  pdfjsLib.GlobalWorkerOptions.workerSrc = '/pdf.worker.min.mjs'
 
   const arrayBuffer = await file.arrayBuffer()
   const pdf = await pdfjsLib.getDocument({ data: new Uint8Array(arrayBuffer) }).promise
