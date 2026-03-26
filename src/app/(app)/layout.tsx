@@ -19,7 +19,7 @@ export default async function AppLayout({
   }
 
   return (
-    <div className="flex h-full bg-gray-900">
+    <div className="flex h-full bg-gray-950 bg-[radial-gradient(ellipse_80%_60%_at_-10%_-10%,rgba(16,185,129,0.07),transparent)]">
       <Sidebar userEmail={user.email} />
       <div className="flex-1 flex flex-col lg:ml-64 min-h-screen">
         <Header userEmail={user.email} />

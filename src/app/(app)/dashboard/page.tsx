@@ -202,18 +202,14 @@ export default async function DashboardPage() {
       {/* Stats grid */}
       <div className={ClassNames.statsGrid}>
         {/* Ingresos */}
-        <div className={ClassNames.statCard}>
+        <div className={ClassNames.statCardIngreso}>
           <div className={ClassNames.statCardHeader}>
             <div className={ClassNames.statIconIngreso}>
               <TrendingUp className="w-5 h-5 text-emerald-400" />
             </div>
             {ingresosChange !== 0 && (
               <span className={ingresosChange >= 0 ? ClassNames.statChangePos : ClassNames.statChangeNeg}>
-                {ingresosChange >= 0 ? (
-                  <ArrowUpRight className="w-3 h-3" />
-                ) : (
-                  <ArrowDownRight className="w-3 h-3" />
-                )}
+                {ingresosChange >= 0 ? <ArrowUpRight className="w-3 h-3" /> : <ArrowDownRight className="w-3 h-3" />}
                 {Math.abs(ingresosChange).toFixed(1)}%
               </span>
             )}
@@ -224,18 +220,14 @@ export default async function DashboardPage() {
         </div>
 
         {/* Gastos */}
-        <div className={ClassNames.statCard}>
+        <div className={ClassNames.statCardGasto}>
           <div className={ClassNames.statCardHeader}>
             <div className={ClassNames.statIconGasto}>
               <TrendingDown className="w-5 h-5 text-red-400" />
             </div>
             {gastosChange !== 0 && (
               <span className={gastosChange <= 0 ? ClassNames.statChangePos : ClassNames.statChangeNeg}>
-                {gastosChange >= 0 ? (
-                  <ArrowUpRight className="w-3 h-3" />
-                ) : (
-                  <ArrowDownRight className="w-3 h-3" />
-                )}
+                {gastosChange >= 0 ? <ArrowUpRight className="w-3 h-3" /> : <ArrowDownRight className="w-3 h-3" />}
                 {Math.abs(gastosChange).toFixed(1)}%
               </span>
             )}
@@ -246,7 +238,7 @@ export default async function DashboardPage() {
         </div>
 
         {/* Balance */}
-        <div className={ClassNames.statCard}>
+        <div className={ClassNames.statCardBalance}>
           <div className={ClassNames.statCardHeader}>
             <div className={balance >= 0 ? ClassNames.statIconBluePos : ClassNames.statIconOrangeNeg}>
               <Wallet className={`w-5 h-5 ${balance >= 0 ? 'text-blue-400' : 'text-orange-400'}`} />
@@ -256,28 +248,22 @@ export default async function DashboardPage() {
           <p className={balance >= 0 ? ClassNames.statValueBalancePos : ClassNames.statValueBalanceNeg}>
             {formatARS(balance)}
           </p>
-          <p className={ClassNames.statSub}>Ingresos - Gastos</p>
+          <p className={ClassNames.statSub}>Ingresos − Gastos</p>
         </div>
 
         {/* USD con blue */}
-        <div className={ClassNames.statCard}>
+        <div className={ClassNames.statCardUSD}>
           <div className={ClassNames.statCardHeader}>
             <div className={ClassNames.statIconAmber}>
               <DollarSign className="w-5 h-5 text-amber-400" />
             </div>
           </div>
-          <p className={ClassNames.statLabel}>USD (dólar blue)</p>
+          <p className={ClassNames.statLabel}>USD posibles (blue)</p>
           <p className={ClassNames.statValueAmber}>
-            {usdPosibles.blue !== null
-              ? formatUSD(usdPosibles.blue)
-              : surplus <= 0
-              ? 'Sin superávit'
-              : 'N/D'}
+            {usdPosibles.blue !== null ? formatUSD(usdPosibles.blue) : surplus <= 0 ? 'Sin superávit' : 'N/D'}
           </p>
           <p className={ClassNames.statSub}>
-            {dolarRates.blue
-              ? `Venta: ${formatARS(dolarRates.blue.venta)}`
-              : 'Cotización no disponible'}
+            {dolarRates.blue ? `Venta: ${formatARS(dolarRates.blue.venta)}` : 'Cotización no disponible'}
           </p>
         </div>
       </div>
