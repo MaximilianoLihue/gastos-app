@@ -63,25 +63,39 @@ export default function TransactionForm({
 
           {/* Amount */}
           <div>
-            <label className={S.label}>
-              Monto (ARS)
-            </label>
-            <div className={S.amountWrap}>
-              <span className={S.amountPrefix}>
-                $
-              </span>
-              <input
-                type="number"
-                step="0.01"
-                min="0.01"
-                required
-                value={form.amount}
-                onChange={(e) =>
-                  setForm((prev) => ({ ...prev, amount: e.target.value }))
-                }
-                placeholder="0.00"
-                className={S.amountInput}
-              />
+            <label className={S.label}>Monto</label>
+            <div className={S.amountRow}>
+              <div className={S.currencyToggle}>
+                {(['ARS', 'USD'] as const).map((cur) => (
+                  <button
+                    key={cur}
+                    type="button"
+                    onClick={() => setForm((prev) => ({ ...prev, currency: cur }))}
+                    className={form.currency === cur
+                      ? cur === 'USD' ? S.currencyBtnUsdActive : S.currencyBtnArsActive
+                      : S.currencyBtnInactive}
+                  >
+                    {cur === 'ARS' ? '$ ARS' : 'USD'}
+                  </button>
+                ))}
+              </div>
+              <div className={S.amountWrap}>
+                <span className={S.amountPrefix}>
+                  {form.currency === 'USD' ? 'U$S' : '$'}
+                </span>
+                <input
+                  type="number"
+                  step="0.01"
+                  min="0.01"
+                  required
+                  value={form.amount}
+                  onChange={(e) =>
+                    setForm((prev) => ({ ...prev, amount: e.target.value }))
+                  }
+                  placeholder="0.00"
+                  className={S.amountInput}
+                />
+              </div>
             </div>
           </div>
 

@@ -17,6 +17,7 @@ export function useTransactionForm({ transaction, onSuccess }: UseTransactionFor
   const [form, setForm] = useState({
     type: (transaction?.type ?? 'gasto') as TransactionType,
     amount: transaction?.amount?.toString() ?? '',
+    currency: (transaction?.currency ?? 'ARS') as 'ARS' | 'USD',
     description: transaction?.description ?? '',
     date: transaction?.date ?? format(new Date(), 'yyyy-MM-dd'),
     category_id: transaction?.category_id ?? '',
@@ -58,6 +59,7 @@ export function useTransactionForm({ transaction, onSuccess }: UseTransactionFor
         user_id: user.id,
         type: form.type,
         amount: parseFloat(form.amount),
+        currency: form.currency,
         description: form.description || null,
         date: form.date,
         category_id: form.category_id || null,

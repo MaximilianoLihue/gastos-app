@@ -14,6 +14,7 @@ export interface Transaction {
   user_id: string
   category_id: string | null
   amount: number
+  currency: 'ARS' | 'USD'
   description: string | null
   date: string
   type: TransactionType

@@ -54,7 +54,7 @@ export default async function DashboardPage() {
   // Fetch transactions for last month (for comparison + alerts)
   const { data: lastMonthTxs } = await supabase
     .from('transactions')
-    .select('amount, type, category:categories(name, color)')
+    .select('amount, type, currency, category:categories(name, color)')
     .gte('date', lastMonthStart)
     .lte('date', lastMonthEnd)
 
@@ -72,25 +72,30 @@ export default async function DashboardPage() {
   const transactions = thisMonthTxs as Transaction[] ?? []
   const lastMonthTransactions = lastMonthTxs ?? []
 
-  // Calculate stats
+  // Convert USD amounts to ARS using blue sell rate for unified totals
+  const blueVenta = dolarRates.blue?.venta ?? 1
+  const toARS = (amount: number, currency: string) =>
+    currency === 'USD' ? amount * blueVenta : amount
+
+  // Calculate stats (USD converted to ARS at blue rate)
   const totalIngresos = transactions
     .filter((t) => t.type === 'ingreso')
-    .reduce((sum, t) => sum + Number(t.amount), 0)
+    .reduce((sum, t) => sum + toARS(Number(t.amount), t.currency ?? 'ARS'), 0)
 
   const totalGastos = transactions
     .filter((t) => t.type === 'gasto')
-    .reduce((sum, t) => sum + Number(t.amount), 0)
+    .reduce((sum, t) => sum + toARS(Number(t.amount), t.currency ?? 'ARS'), 0)
 
   const balance = totalIngresos - totalGastos
   const surplus = balance > 0 ? balance : 0
 
   const lastMonthIngresos = lastMonthTransactions
-    .filter((t) => t.type === 'ingreso')
-    .reduce((sum, t) => sum + Number(t.amount), 0)
+    .filter((t: { type: string }) => t.type === 'ingreso')
+    .reduce((sum: number, t: { amount: number; currency?: string }) => sum + toARS(Number(t.amount), t.currency ?? 'ARS'), 0)
 
   const lastMonthGastos = lastMonthTransactions
-    .filter((t) => t.type === 'gasto')
-    .reduce((sum, t) => sum + Number(t.amount), 0)
+    .filter((t: { type: string }) => t.type === 'gasto')
+    .reduce((sum: number, t: { amount: number; currency?: string }) => sum + toARS(Number(t.amount), t.currency ?? 'ARS'), 0)
 
   const usdPosibles = calcularUSDPosibles(surplus, dolarRates)
 
@@ -111,7 +116,7 @@ export default async function DashboardPage() {
       const key = t.category?.name ?? 'Sin categoría'
       const color = t.category?.color ?? '#6b7280'
       if (!acc[key]) acc[key] = { name: key, color, total: 0 }
-      acc[key].total += Number(t.amount)
+      acc[key].total += toARS(Number(t.amount), t.currency ?? 'ARS')
       return acc
     }, {} as Record<string, { name: string; color: string; total: number }>)
 
@@ -120,12 +125,12 @@ export default async function DashboardPage() {
     .slice(0, 6)
 
   // Spending alerts — compare this month vs last month by category
-  type LastTx = { amount: number; type: string; category?: { name: string; color: string } | null }
+  type LastTx = { amount: number; type: string; currency?: string; category?: { name: string; color: string } | null }
   const gastosPorCatMesAnterior = ((lastMonthTxs ?? []) as unknown as LastTx[])
     .filter(t => t.type === 'gasto')
     .reduce((acc, t) => {
       const key = t.category?.name ?? 'Sin categoría'
-      acc[key] = (acc[key] ?? 0) + Number(t.amount)
+      acc[key] = (acc[key] ?? 0) + toARS(Number(t.amount), t.currency ?? 'ARS')
       return acc
     }, {} as Record<string, number>)
 

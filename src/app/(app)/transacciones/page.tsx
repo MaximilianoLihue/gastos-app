@@ -88,6 +88,7 @@ interface VisaRow {
   description: string
   amount: number
   type: 'ingreso' | 'gasto'
+  currency: 'ARS' | 'USD'
 }
 
 function parseVisaStatement(rows: string[][]): VisaRow[] {
@@ -146,6 +147,7 @@ function parseVisaStatement(rows: string[][]): VisaRow[] {
           description: desc,
           amount: Math.abs(num),
           type: num < 0 ? 'ingreso' : 'gasto',
+          currency: 'ARS',
         })
       }
     }
@@ -157,9 +159,10 @@ function parseVisaStatement(rows: string[][]): VisaRow[] {
       if (!isNaN(num) && num !== 0) {
         results.push({
           date: lastDate,
-          description: `${desc} (USD)`,
+          description: desc,
           amount: Math.abs(num),
           type: num < 0 ? 'ingreso' : 'gasto',
+          currency: 'USD',
         })
       }
     }
@@ -248,6 +251,19 @@ function formatARS(value: number): string {
   }).format(value)
 }
 
+function formatUSD(value: number): string {
+  return new Intl.NumberFormat('es-AR', {
+    style: 'currency',
+    currency: 'USD',
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  }).format(value)
+}
+
+function formatAmount(value: number, currency: 'ARS' | 'USD' = 'ARS'): string {
+  return currency === 'USD' ? formatUSD(value) : formatARS(value)
+}
+
 function TransaccionesPageInner() {
   const supabase = createClient()
   const searchParams = useSearchParams()
@@ -269,9 +285,15 @@ function TransaccionesPageInner() {
   const [importResult, setImportResult] = useState<ImportResult | null>(null)
   const [cleaning, setCleaning] = useState(false)
   const [cleanResult, setCleanResult] = useState<{ deleted: number } | null>(null)
+  const [showClearConfirm, setShowClearConfirm] = useState(false)
+  const [clearing, setClearing] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const pdfInputRef = useRef<HTMLInputElement>(null)
   const receiptInputRef = useRef<HTMLInputElement>(null)
+  const importMenuRef = useRef<HTMLDivElement>(null)
+  const exportMenuRef = useRef<HTMLDivElement>(null)
+  const [showImportMenu, setShowImportMenu] = useState(false)
+  const [showExportMenu, setShowExportMenu] = useState(false)
   const [receiptParsing, setReceiptParsing] = useState(false)
   const [receiptPreview, setReceiptPreview] = useState<{
     date: string; description: string; amount: number; type: 'ingreso' | 'gasto'
@@ -286,6 +308,16 @@ function TransaccionesPageInner() {
     document.addEventListener('click', close)
     return () => document.removeEventListener('click', close)
   }, [quickCatTx])
+
+  useEffect(() => {
+    if (!showImportMenu && !showExportMenu) return
+    const close = (e: MouseEvent) => {
+      if (importMenuRef.current && !importMenuRef.current.contains(e.target as Node)) setShowImportMenu(false)
+      if (exportMenuRef.current && !exportMenuRef.current.contains(e.target as Node)) setShowExportMenu(false)
+    }
+    document.addEventListener('mousedown', close)
+    return () => document.removeEventListener('mousedown', close)
+  }, [showImportMenu, showExportMenu])
 
   useEffect(() => {
     if (!catDropdownOpen) return
@@ -483,7 +515,7 @@ function TransaccionesPageInner() {
           let category_id: string | null = null
           const guessed = guessCategory(tx.description)
           if (guessed) category_id = await ensureCategory(guessed.category, tx.type, guessed.color) || null
-          toInsert.push({ user_id: user.id, date: tx.date, type: tx.type, amount: tx.amount, description: tx.description, category_id })
+          toInsert.push({ user_id: user.id, date: tx.date, type: tx.type, amount: tx.amount, currency: tx.currency, description: tx.description, category_id })
         }
 
         if (toInsert.length > 0) {
@@ -572,7 +604,7 @@ function TransaccionesPageInner() {
             }
           }
 
-          toInsert.push({ user_id: user.id, date, type, amount, description, category_id })
+          toInsert.push({ user_id: user.id, date, type, amount, currency: 'ARS', description, category_id })
         }
       } else {
         // Generic format: fecha, tipo, monto, descripcion, categoria
@@ -584,6 +616,7 @@ function TransaccionesPageInner() {
         const iM = normHeaders.findIndex(h => ['monto','amount','importe','valor'].includes(h))
         const iD = normHeaders.findIndex(h => ['descripcion','description','detalle','concepto'].includes(h))
         const iC = normHeaders.findIndex(h => ['categoria','category','cat'].includes(h))
+        const iCur = normHeaders.findIndex(h => ['moneda','currency','divisa'].includes(h))
 
         if (iF < 0 || iT < 0 || iM < 0) {
           result.errors.push('Columnas requeridas no encontradas: fecha, tipo, monto')
@@ -616,7 +649,6 @@ function TransaccionesPageInner() {
           if (!category_id && description) {
             const guessed = guessCategory(description)
             if (guessed) {
-              const key = `${guessed.category.toLowerCase()}__${type}`
               const existing = (categories ?? []).find(
                 c => c.name.toLowerCase() === guessed.category.toLowerCase() && c.type === type
               )
@@ -631,7 +663,9 @@ function TransaccionesPageInner() {
             }
           }
 
-          toInsert.push({ user_id: user.id, date, type, amount, description, category_id })
+          const rawCur = iCur >= 0 ? String(row[iCur] ?? '').trim().toUpperCase() : ''
+          const currency: 'ARS' | 'USD' = rawCur === 'USD' ? 'USD' : 'ARS'
+          toInsert.push({ user_id: user.id, date, type, amount, currency, description, category_id })
         }
       }
 
@@ -770,6 +804,19 @@ function TransaccionesPageInner() {
     }
   }
 
+  async function handleClearAll() {
+    setClearing(true)
+    try {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) return
+      await supabase.from('transactions').delete().eq('user_id', user.id)
+      load()
+    } finally {
+      setClearing(false)
+      setShowClearConfirm(false)
+    }
+  }
+
   async function handleImportReceipt(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
     if (!file) return
@@ -889,50 +936,83 @@ function TransaccionesPageInner() {
             <X className="w-4 h-4" />
             <span className={S.btnLabel}>{cleaning ? 'Limpiando...' : 'Duplicados'}</span>
           </button>
+          <button
+            onClick={() => setShowClearConfirm(true)}
+            disabled={cleaning || importing}
+            className={S.btnClearAll}
+            title="Eliminar todas las transacciones"
+          >
+            <Trash2 className="w-4 h-4" />
+            <span className={S.btnLabel}>Limpiar</span>
+          </button>
 
-          <button
-            onClick={() => fileInputRef.current?.click()}
-            disabled={importing}
-            className={S.btnImport}
-            title="Importar desde Excel"
-          >
-            <Upload className="w-4 h-4 text-yellow-400" />
-            <span className={S.btnLabel}>{importing ? 'Importando...' : 'Importar'}</span>
-          </button>
-          <button
-            onClick={() => pdfInputRef.current?.click()}
-            disabled={importing}
-            className={S.btnImport}
-            title="Importar PDF Mercado Pago"
-          >
-            <Upload className="w-4 h-4 text-red-400" />
-            <span className={S.btnLabel}>{importing ? 'Importando...' : 'PDF MP'}</span>
-          </button>
-          <button
-            onClick={() => receiptInputRef.current?.click()}
-            disabled={receiptParsing}
-            className={S.btnReceipt}
-            title="Escanear comprobante con IA"
-          >
-            <Camera className="w-4 h-4" />
-            <span className={S.btnLabel}>{receiptParsing ? 'Analizando...' : 'Comprobante'}</span>
-          </button>
-          <button
-            onClick={handleExportExcel}
-            className={S.btnExport}
-            title="Exportar a Excel"
-          >
-            <FileSpreadsheet className="w-4 h-4 text-emerald-400" />
-            <span className={S.btnLabel}>Exportar</span>
-          </button>
-          <button
-            onClick={handleExportPDF}
-            className={S.btnExport}
-            title="Exportar a PDF"
-          >
-            <FileText className="w-4 h-4 text-red-400" />
-            <span className={S.btnLabel}>PDF</span>
-          </button>
+          {/* Import dropdown */}
+          <div ref={importMenuRef} className={S.menuWrap}>
+            <button
+              onClick={() => { setShowImportMenu(v => !v); setShowExportMenu(false) }}
+              disabled={importing || receiptParsing}
+              className={S.btnImport}
+            >
+              <Upload className="w-4 h-4 text-yellow-400" />
+              <span className={S.btnLabel}>{importing ? 'Importando...' : receiptParsing ? 'Analizando...' : 'Importar'}</span>
+              <ChevronDown className="w-3.5 h-3.5 opacity-60" />
+            </button>
+            {showImportMenu && (
+              <div className={S.menuDropdown}>
+                <button
+                  onClick={() => { setShowImportMenu(false); fileInputRef.current?.click() }}
+                  className={S.menuItem}
+                >
+                  <FileSpreadsheet className="w-4 h-4 text-yellow-400" />
+                  Excel
+                </button>
+                <button
+                  onClick={() => { setShowImportMenu(false); pdfInputRef.current?.click() }}
+                  className={S.menuItem}
+                >
+                  <FileText className="w-4 h-4 text-red-400" />
+                  PDF Mercado Pago
+                </button>
+                <button
+                  onClick={() => { setShowImportMenu(false); receiptInputRef.current?.click() }}
+                  className={S.menuItem}
+                >
+                  <Camera className="w-4 h-4 text-purple-400" />
+                  Comprobante (OCR)
+                </button>
+              </div>
+            )}
+          </div>
+
+          {/* Export dropdown */}
+          <div ref={exportMenuRef} className={S.menuWrap}>
+            <button
+              onClick={() => { setShowExportMenu(v => !v); setShowImportMenu(false) }}
+              className={S.btnExport}
+            >
+              <Download className="w-4 h-4 text-emerald-400" />
+              <span className={S.btnLabel}>Exportar</span>
+              <ChevronDown className="w-3.5 h-3.5 opacity-60" />
+            </button>
+            {showExportMenu && (
+              <div className={S.menuDropdown}>
+                <button
+                  onClick={() => { setShowExportMenu(false); handleExportExcel() }}
+                  className={S.menuItem}
+                >
+                  <FileSpreadsheet className="w-4 h-4 text-emerald-400" />
+                  Excel
+                </button>
+                <button
+                  onClick={() => { setShowExportMenu(false); handleExportPDF() }}
+                  className={S.menuItem}
+                >
+                  <FileText className="w-4 h-4 text-red-400" />
+                  PDF
+                </button>
+              </div>
+            )}
+          </div>
           <button
             onClick={() => { setEditTx(null); setShowForm(true) }}
             className={S.btnNew}
@@ -1125,7 +1205,10 @@ function TransaccionesPageInner() {
                     <td className={S.tdAmount}>
                       <span className={tx.type === 'ingreso' ? S.amountIngreso : S.amountGasto}>
                         {tx.type === 'ingreso' ? '+' : '-'}
-                        {formatARS(Number(tx.amount))}
+                        {formatAmount(Number(tx.amount), tx.currency ?? 'ARS')}
+                      </span>
+                      <span className={(tx.currency ?? 'ARS') === 'USD' ? S.currencyBadgeUsd : S.currencyBadgeArs}>
+                        {tx.currency ?? 'ARS'}
                       </span>
                     </td>
                     <td className={S.tdActions}>
@@ -1337,6 +1420,35 @@ function TransaccionesPageInner() {
                 className={S.receiptConfirmBtn}
               >
                 Agregar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Clear all confirmation modal */}
+      {showClearConfirm && (
+        <div className={S.modalOverlay}>
+          <div className={S.cleanModalBox}>
+            <div className={S.clearAllIcon}>
+              <Trash2 className="w-7 h-7 text-red-400" />
+            </div>
+            <h3 className={S.cleanTitle}>¿Seguro querés eliminar las transacciones?</h3>
+            <p className={S.cleanText}>Esta acción no se puede deshacer. Se eliminarán <strong className="text-white">todas</strong> las transacciones.</p>
+            <div className={S.clearAllActions}>
+              <button
+                onClick={() => setShowClearConfirm(false)}
+                disabled={clearing}
+                className={S.clearAllCancelBtn}
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={handleClearAll}
+                disabled={clearing}
+                className={S.clearAllConfirmBtn}
+              >
+                {clearing ? 'Eliminando...' : 'Sí, eliminar todo'}
               </button>
             </div>
           </div>
