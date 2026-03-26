@@ -1,15 +1,15 @@
 export const ClassNames = {
   root: "space-y-6",
-  welcomeTitle: "text-2xl font-bold capitalize bg-gradient-to-r from-white to-gray-400 bg-clip-text text-transparent",
-  welcomeSub: "text-gray-500 text-sm mt-1",
+  welcomeTitle: "text-2xl font-bold capitalize bg-gradient-to-r from-white to-gray-400 bg-clip-text text-transparent animate-fade-in-up",
+  welcomeSub: "text-gray-500 text-sm mt-1 animate-fade-in-up delay-75",
   welcomeHighlight: "text-emerald-400 font-semibold capitalize",
   statsGrid: "grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4",
 
-  // Colored gradient stat cards
-  statCardIngreso: "bg-gradient-to-br from-emerald-500/10 to-gray-900 border border-emerald-500/20 rounded-2xl p-5 hover:border-emerald-500/40 transition-all duration-300",
-  statCardGasto:   "bg-gradient-to-br from-red-500/10 to-gray-900 border border-red-500/20 rounded-2xl p-5 hover:border-red-500/40 transition-all duration-300",
-  statCardBalance: "bg-gradient-to-br from-blue-500/10 to-gray-900 border border-blue-500/20 rounded-2xl p-5 hover:border-blue-500/40 transition-all duration-300",
-  statCardUSD:     "bg-gradient-to-br from-amber-500/10 to-gray-900 border border-amber-500/20 rounded-2xl p-5 hover:border-amber-500/40 transition-all duration-300",
+  // Colored gradient stat cards with staggered entrance
+  statCardIngreso: "bg-gradient-to-br from-emerald-500/10 to-gray-900 border border-emerald-500/20 rounded-2xl p-5 hover:border-emerald-500/40 hover:-translate-y-0.5 transition-all duration-300 animate-fade-in-up delay-100 hover-lift",
+  statCardGasto:   "bg-gradient-to-br from-red-500/10 to-gray-900 border border-red-500/20 rounded-2xl p-5 hover:border-red-500/40 hover:-translate-y-0.5 transition-all duration-300 animate-fade-in-up delay-150 hover-lift",
+  statCardBalance: "bg-gradient-to-br from-blue-500/10 to-gray-900 border border-blue-500/20 rounded-2xl p-5 hover:border-blue-500/40 hover:-translate-y-0.5 transition-all duration-300 animate-fade-in-up delay-200 hover-lift",
+  statCardUSD:     "bg-gradient-to-br from-amber-500/10 to-gray-900 border border-amber-500/20 rounded-2xl p-5 hover:border-amber-500/40 hover:-translate-y-0.5 transition-all duration-300 animate-fade-in-up delay-250 hover-lift",
 
   statCardHeader: "flex items-center justify-between mb-4",
   statIconIngreso: "w-10 h-10 rounded-xl bg-emerald-500/20 flex items-center justify-center ring-1 ring-emerald-500/30 shadow-lg shadow-emerald-500/10",
@@ -26,7 +26,7 @@ export const ClassNames = {
   statValueBalanceNeg: "text-3xl font-bold mt-1 tracking-tight text-orange-400",
   statSub: "text-gray-600 text-xs mt-1",
 
-  topCatCard: "bg-gray-900/60 backdrop-blur-sm border border-white/5 rounded-2xl p-6",
+  topCatCard: "bg-gray-900/60 backdrop-blur-sm border border-white/5 rounded-2xl p-6 animate-fade-in-up delay-300",
   topCatHeader: "flex items-center justify-between mb-5",
   topCatTitle: "text-white font-semibold",
   topCatMonth: "text-gray-600 text-xs capitalize bg-gray-800 px-2 py-1 rounded-lg",
@@ -46,7 +46,7 @@ export const ClassNames = {
   topCatFooterLabel: "text-gray-500",
   topCatFooterValue: "text-red-400 font-semibold",
 
-  alertsCard: "bg-gray-900/60 backdrop-blur-sm border border-white/5 rounded-2xl p-6",
+  alertsCard: "bg-gray-900/60 backdrop-blur-sm border border-white/5 rounded-2xl p-6 animate-fade-in-up delay-400",
   alertsHeader: "flex items-center gap-2 mb-5",
   alertsTitle: "text-white font-semibold",
   alertsMonth: "ml-auto text-gray-600 text-xs capitalize",
@@ -67,7 +67,7 @@ export const ClassNames = {
   alertSuggestion: "text-gray-600 text-xs",
 
   bottomGrid: "grid grid-cols-1 lg:grid-cols-3 gap-6",
-  recentCard: "lg:col-span-2 bg-gray-900/60 backdrop-blur-sm border border-white/5 rounded-2xl p-6",
+  recentCard: "lg:col-span-2 bg-gray-900/60 backdrop-blur-sm border border-white/5 rounded-2xl p-6 animate-fade-in-up delay-400",
   recentHeader: "flex items-center justify-between mb-5",
   recentTitle: "text-white font-semibold",
   recentLink: "text-emerald-400 hover:text-emerald-300 text-sm font-medium transition-colors",

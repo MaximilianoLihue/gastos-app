@@ -8,44 +8,102 @@ body {
   font-family: var(--font-geist), system-ui, -apple-system, sans-serif;
 }
 
-/* Scrollbar styling */
-::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
-}
+/* ─── Scrollbar ─────────────────────────────────────── */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: #111827; }
+::-webkit-scrollbar-thumb { background: #1f2937; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #374151; }
 
-::-webkit-scrollbar-track {
-  background: #1f2937;
-}
-
-::-webkit-scrollbar-thumb {
-  background: #374151;
-  border-radius: 3px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: #4b5563;
-}
-
-/* Date input dark mode */
+/* ─── Form inputs ───────────────────────────────────── */
 input[type="date"]::-webkit-calendar-picker-indicator {
   filter: invert(1) opacity(0.5);
   cursor: pointer;
 }
-
-/* Number input hide arrows */
 input[type="number"]::-webkit-inner-spin-button,
-input[type="number"]::-webkit-outer-spin-button {
-  opacity: 0.5;
-}
+input[type="number"]::-webkit-outer-spin-button { opacity: 0.5; }
 
-/* Smooth transitions */
-* {
-  transition-property: background-color, border-color, color, opacity;
+/* ─── Global smooth transitions ─────────────────────── */
+*, *::before, *::after {
+  transition-property: background-color, border-color, color, opacity, box-shadow;
   transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
   transition-duration: 150ms;
 }
+a, button { transition-duration: 200ms; }
 
-a, button {
-  transition-duration: 200ms;
+/* ─── Keyframes ─────────────────────────────────────── */
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes scaleIn {
+  from { opacity: 0; transform: scale(0.94); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+@keyframes slideInDown {
+  from { opacity: 0; transform: translateY(-8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideInLeft {
+  from { opacity: 0; transform: translateX(-10px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes pulseGlow {
+  0%, 100% { box-shadow: 0 0 10px rgba(16,185,129,0.35); }
+  50%       { box-shadow: 0 0 22px rgba(16,185,129,0.65), 0 0 40px rgba(16,185,129,0.2); }
+}
+
+@keyframes shimmer {
+  0%   { background-position: -400px 0; }
+  100% { background-position: 400px 0; }
+}
+
+@keyframes spin-slow {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+/* ─── Animation utilities ───────────────────────────── */
+.animate-fade-in-up   { animation: fadeInUp  0.45s cubic-bezier(0.22, 1, 0.36, 1) both; }
+.animate-fade-in      { animation: fadeIn    0.3s  ease-out both; }
+.animate-scale-in     { animation: scaleIn   0.25s cubic-bezier(0.34, 1.56, 0.64, 1) both; }
+.animate-slide-in-down{ animation: slideInDown 0.2s cubic-bezier(0.22, 1, 0.36, 1) both; }
+.animate-slide-in-left{ animation: slideInLeft 0.3s cubic-bezier(0.22, 1, 0.36, 1) both; }
+.animate-pulse-glow   { animation: pulseGlow  2.4s ease-in-out infinite; }
+.animate-spin-slow    { animation: spin-slow  8s linear infinite; }
+
+/* Stagger delays */
+.delay-0   { animation-delay: 0ms; }
+.delay-75  { animation-delay: 75ms; }
+.delay-100 { animation-delay: 100ms; }
+.delay-150 { animation-delay: 150ms; }
+.delay-200 { animation-delay: 200ms; }
+.delay-250 { animation-delay: 250ms; }
+.delay-300 { animation-delay: 300ms; }
+.delay-400 { animation-delay: 400ms; }
+.delay-500 { animation-delay: 500ms; }
+
+/* ─── Interactive utilities ─────────────────────────── */
+.hover-lift {
+  transition: transform 0.2s cubic-bezier(0.22, 1, 0.36, 1),
+              box-shadow 0.2s ease;
+}
+.hover-lift:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+}
+
+/* Shimmer skeleton */
+.skeleton-shimmer {
+  background: linear-gradient(90deg, #1f2937 25%, #374151 50%, #1f2937 75%);
+  background-size: 400px 100%;
+  animation: shimmer 1.5s infinite;
 }

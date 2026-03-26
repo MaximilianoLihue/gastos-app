@@ -1,5 +1,5 @@
 export const ClassNames = {
-  root: "space-y-6",
+  root: "space-y-6 animate-fade-in-up",
   pageHeader: "flex flex-col sm:flex-row sm:items-center justify-between gap-4",
   pageTitle: "text-white text-2xl font-bold",
   pageSub: "text-gray-400 text-sm mt-1",

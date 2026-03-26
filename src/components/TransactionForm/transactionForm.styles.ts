@@ -1,6 +1,6 @@
 export const ClassNames = {
-  overlay: "fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm",
-  modal: "bg-gray-800 border border-gray-700 rounded-2xl w-full max-w-md shadow-2xl",
+  overlay: "fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in",
+  modal: "bg-gray-800 border border-gray-700 rounded-2xl w-full max-w-md shadow-2xl animate-scale-in",
   header: "flex items-center justify-between px-6 py-4 border-b border-gray-700",
   headerTitle: "text-white font-semibold text-lg",
   closeBtn: "p-1.5 rounded-lg text-gray-400 hover:text-white hover:bg-gray-700 transition-colors",
