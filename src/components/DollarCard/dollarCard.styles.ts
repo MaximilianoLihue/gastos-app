@@ -1,4 +1,4 @@
-export const S = {
+export const ClassNames = {
   skeleton: "bg-gray-800/50 border border-gray-700/50 rounded-2xl p-5 animate-pulse",
   skeletonTitle: "h-4 bg-gray-700 rounded w-24 mb-3",
   skeletonValue: "h-8 bg-gray-700 rounded w-32 mb-2",

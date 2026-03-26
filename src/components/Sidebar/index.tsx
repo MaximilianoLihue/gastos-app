@@ -15,7 +15,7 @@ import {
   RefreshCw,
   Target,
 } from 'lucide-react'
-import { S } from './sidebar.styles'
+import { ClassNames } from './sidebar.styles'
 import { useSidebar } from './logic/useSidebar'
 
 const navItems = [
@@ -37,20 +37,20 @@ export default function Sidebar({ userEmail }: SidebarProps) {
   const { mobileOpen, setMobileOpen, handleLogout } = useSidebar()
 
   const SidebarContent = () => (
-    <div className={S.inner}>
+    <div className={ClassNames.inner}>
       {/* Logo */}
-      <div className={S.logoWrap}>
-        <div className={S.logoIcon}>
+      <div className={ClassNames.logoWrap}>
+        <div className={ClassNames.logoIcon}>
           <TrendingUp className="w-5 h-5 text-white" />
         </div>
         <div>
-          <h1 className={S.logoTitle}>GastosApp</h1>
-          <p className={S.logoSub}>Finanzas personales</p>
+          <h1 className={ClassNames.logoTitle}>GastosApp</h1>
+          <p className={ClassNames.logoSub}>Finanzas personales</p>
         </div>
       </div>
 
       {/* Nav */}
-      <nav className={S.nav}>
+      <nav className={ClassNames.nav}>
         {navItems.map(({ href, label, icon: Icon }) => {
           const isActive = pathname === href || pathname.startsWith(href + '/')
           return (
@@ -58,14 +58,14 @@ export default function Sidebar({ userEmail }: SidebarProps) {
               key={href}
               href={href}
               onClick={() => setMobileOpen(false)}
-              className={`${S.navLinkBase} ${isActive ? S.navLinkActive : S.navLinkInactive}`}
+              className={`${ClassNames.navLinkBase} ${isActive ? ClassNames.navLinkActive : ClassNames.navLinkInactive}`}
             >
               <Icon
-                className={`${S.navIconBase} ${isActive ? S.navIconActive : S.navIconInactive}`}
+                className={`${ClassNames.navIconBase} ${isActive ? ClassNames.navIconActive : ClassNames.navIconInactive}`}
               />
               {label}
               {isActive && (
-                <span className={S.navActiveDot} />
+                <span className={ClassNames.navActiveDot} />
               )}
             </Link>
           )
@@ -73,15 +73,15 @@ export default function Sidebar({ userEmail }: SidebarProps) {
       </nav>
 
       {/* User + Logout */}
-      <div className={S.footer}>
+      <div className={ClassNames.footer}>
         {userEmail && (
-          <div className={S.footerEmail}>
-            <p className={S.footerEmailText}>{userEmail}</p>
+          <div className={ClassNames.footerEmail}>
+            <p className={ClassNames.footerEmailText}>{userEmail}</p>
           </div>
         )}
         <button
           onClick={handleLogout}
-          className={S.logoutBtn}
+          className={ClassNames.logoutBtn}
         >
           <LogOut className="w-5 h-5 flex-shrink-0" />
           Cerrar sesión
@@ -95,7 +95,7 @@ export default function Sidebar({ userEmail }: SidebarProps) {
       {/* Mobile toggle button */}
       <button
         onClick={() => setMobileOpen(true)}
-        className={S.mobileToggle}
+        className={ClassNames.mobileToggle}
         aria-label="Abrir menú"
       >
         <Menu className="w-5 h-5" />
@@ -104,16 +104,16 @@ export default function Sidebar({ userEmail }: SidebarProps) {
       {/* Mobile overlay */}
       {mobileOpen && (
         <div
-          className={S.mobileOverlay}
+          className={ClassNames.mobileOverlay}
           onClick={() => setMobileOpen(false)}
         />
       )}
 
       {/* Mobile sidebar */}
-      <aside className={mobileOpen ? S.mobileSidebarOpen : S.mobileSidebarClosed}>
+      <aside className={mobileOpen ? ClassNames.mobileSidebarOpen : ClassNames.mobileSidebarClosed}>
         <button
           onClick={() => setMobileOpen(false)}
-          className={S.mobileCloseBtn}
+          className={ClassNames.mobileCloseBtn}
           aria-label="Cerrar menú"
         >
           <X className="w-5 h-5" />
@@ -122,7 +122,7 @@ export default function Sidebar({ userEmail }: SidebarProps) {
       </aside>
 
       {/* Desktop sidebar */}
-      <aside className={S.desktopSidebar}>
+      <aside className={ClassNames.desktopSidebar}>
         <SidebarContent />
       </aside>
     </>

@@ -2,7 +2,7 @@
 
 import { usePathname } from 'next/navigation'
 import { Bell, LogOut } from 'lucide-react'
-import { S } from './header.styles'
+import { ClassNames } from './header.styles'
 import { useHeader } from './logic/useHeader'
 
 const pageTitles: Record<string, string> = {
@@ -30,10 +30,10 @@ export default function Header({ userEmail }: HeaderProps) {
     : '??'
 
   return (
-    <header className={S.root}>
-      <div className={S.leftWrap}>
-        <h2 className={S.title}>{title}</h2>
-        <p className={S.subtitle}>
+    <header className={ClassNames.root}>
+      <div className={ClassNames.leftWrap}>
+        <h2 className={ClassNames.title}>{title}</h2>
+        <p className={ClassNames.subtitle}>
           {new Date().toLocaleDateString('es-AR', {
             weekday: 'long',
             year: 'numeric',
@@ -43,27 +43,27 @@ export default function Header({ userEmail }: HeaderProps) {
         </p>
       </div>
 
-      <div className={S.rightWrap}>
-        <button className={S.bellBtn}>
+      <div className={ClassNames.rightWrap}>
+        <button className={ClassNames.bellBtn}>
           <Bell className="w-5 h-5" />
         </button>
 
-        <div className={S.avatarWrap} ref={ref}>
+        <div className={ClassNames.avatarWrap} ref={ref}>
           <button
             onClick={() => setOpen(o => !o)}
-            className={`${S.avatarBase} ${open ? S.avatarOpen : S.avatarClosed}`}
+            className={`${ClassNames.avatarBase} ${open ? ClassNames.avatarOpen : ClassNames.avatarClosed}`}
           >
-            <span className={S.initials}>{initials}</span>
+            <span className={ClassNames.initials}>{initials}</span>
           </button>
 
           {open && (
-            <div className={S.dropdown}>
-              <div className={S.dropdownEmail}>
-                <p className={S.dropdownEmailText}>{userEmail}</p>
+            <div className={ClassNames.dropdown}>
+              <div className={ClassNames.dropdownEmail}>
+                <p className={ClassNames.dropdownEmailText}>{userEmail}</p>
               </div>
               <button
                 onClick={handleLogout}
-                className={S.dropdownLogout}
+                className={ClassNames.dropdownLogout}
               >
                 <LogOut className="w-4 h-4" />
                 Cerrar sesión

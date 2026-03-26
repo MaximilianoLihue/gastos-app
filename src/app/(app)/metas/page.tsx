@@ -5,7 +5,7 @@ import { createClient } from '@/lib/supabase/client'
 import { Target, Plus, Pencil, Trash2, X, CheckCircle, PiggyBank, Calendar, ChevronUp } from 'lucide-react'
 import { format, differenceInDays, parseISO } from 'date-fns'
 import { es } from 'date-fns/locale'
-import { S } from './page.styles'
+import { ClassNames } from './page.styles'
 
 interface Goal {
   id: string
@@ -161,16 +161,16 @@ export default function MetasPage() {
   const totalSaved = goals.reduce((s, g) => s + toARS(Number(g.current_amount), g.currency ?? 'ARS'), 0)
 
   return (
-    <div className={S.root}>
+    <div className={ClassNames.root}>
       {/* Header */}
-      <div className={S.pageHeader}>
+      <div className={ClassNames.pageHeader}>
         <div>
-          <h1 className={S.pageTitle}>Metas financieras</h1>
-          <p className={S.pageSub}>Ahorrá con un objetivo claro</p>
+          <h1 className={ClassNames.pageTitle}>Metas financieras</h1>
+          <p className={ClassNames.pageSub}>Ahorrá con un objetivo claro</p>
         </div>
         <button
           onClick={openCreate}
-          className={S.newBtn}
+          className={ClassNames.newBtn}
         >
           <Plus className="w-4 h-4" />
           Nueva meta
@@ -179,38 +179,38 @@ export default function MetasPage() {
 
       {/* Summary */}
       {goals.length > 0 && (
-        <div className={S.summaryGrid}>
-          <div className={S.summaryCard}>
-            <p className={S.summaryLabel}>Total metas</p>
-            <p className={S.summaryValueWhite}>{goals.length}</p>
+        <div className={ClassNames.summaryGrid}>
+          <div className={ClassNames.summaryCard}>
+            <p className={ClassNames.summaryLabel}>Total metas</p>
+            <p className={ClassNames.summaryValueWhite}>{goals.length}</p>
           </div>
-          <div className={S.summaryCard}>
-            <p className={S.summaryLabel}>Ahorrado</p>
-            <p className={S.summaryValueGreen}>{formatARS(totalSaved)}</p>
+          <div className={ClassNames.summaryCard}>
+            <p className={ClassNames.summaryLabel}>Ahorrado</p>
+            <p className={ClassNames.summaryValueGreen}>{formatARS(totalSaved)}</p>
           </div>
-          <div className={S.summaryCard}>
-            <p className={S.summaryLabel}>Falta ahorrar</p>
-            <p className={S.summaryValueAmber}>{formatARS(Math.max(0, totalTarget - totalSaved))}</p>
+          <div className={ClassNames.summaryCard}>
+            <p className={ClassNames.summaryLabel}>Falta ahorrar</p>
+            <p className={ClassNames.summaryValueAmber}>{formatARS(Math.max(0, totalTarget - totalSaved))}</p>
           </div>
         </div>
       )}
 
       {/* Goals list */}
       {loading ? (
-        <div className={S.skeletonList}>
-          {[1, 2].map(i => <div key={i} className={S.skeletonCard} />)}
+        <div className={ClassNames.skeletonList}>
+          {[1, 2].map(i => <div key={i} className={ClassNames.skeletonCard} />)}
         </div>
       ) : goals.length === 0 ? (
-        <div className={S.emptyWrap}>
+        <div className={ClassNames.emptyWrap}>
           <PiggyBank className="w-14 h-14 mx-auto mb-4 opacity-20" />
           <p className="text-lg">Todavía no tenés metas</p>
           <p className="text-sm mt-1 mb-5">Creá una meta para empezar a ahorrar</p>
-          <button onClick={openCreate} className={S.emptyCreateBtn}>
+          <button onClick={openCreate} className={ClassNames.emptyCreateBtn}>
             Crear primera meta
           </button>
         </div>
       ) : (
-        <div className={S.goalsGrid}>
+        <div className={ClassNames.goalsGrid}>
           {goals.map(goal => {
             const pct = Math.min((Number(goal.current_amount) / Number(goal.target_amount)) * 100, 100)
             const completed = pct >= 100
@@ -220,32 +220,32 @@ export default function MetasPage() {
             return (
               <div
                 key={goal.id}
-                className={completed ? S.goalCardCompleted : S.goalCardNormal}
+                className={completed ? ClassNames.goalCardCompleted : ClassNames.goalCardNormal}
               >
                 {/* Top row */}
-                <div className={S.goalTopRow}>
-                  <div className={S.goalIconRow}>
-                    <div className={S.goalIconWrap} style={{ backgroundColor: `${goal.color}20` }}>
+                <div className={ClassNames.goalTopRow}>
+                  <div className={ClassNames.goalIconRow}>
+                    <div className={ClassNames.goalIconWrap} style={{ backgroundColor: `${goal.color}20` }}>
                       {completed
                         ? <CheckCircle className="w-5 h-5" style={{ color: goal.color }} />
                         : <Target className="w-5 h-5" style={{ color: goal.color }} />}
                     </div>
                     <div>
-                      <p className={S.goalName}>{goal.name}</p>
-                      {goal.description && <p className={S.goalDesc}>{goal.description}</p>}
+                      <p className={ClassNames.goalName}>{goal.name}</p>
+                      {goal.description && <p className={ClassNames.goalDesc}>{goal.description}</p>}
                     </div>
                   </div>
-                  <div className={S.goalCardActions}>
-                    <button onClick={() => openEdit(goal)} className={S.goalEditBtn}>
+                  <div className={ClassNames.goalCardActions}>
+                    <button onClick={() => openEdit(goal)} className={ClassNames.goalEditBtn}>
                       <Pencil className="w-3.5 h-3.5" />
                     </button>
                     {deleteConfirm === goal.id ? (
-                      <div className={S.deleteConfirmWrap}>
-                        <button onClick={() => handleDelete(goal.id)} className={S.deleteConfirmBtn}>Confirmar</button>
-                        <button onClick={() => setDeleteConfirm(null)} className={S.deleteConfirmNoBtn}>No</button>
+                      <div className={ClassNames.deleteConfirmWrap}>
+                        <button onClick={() => handleDelete(goal.id)} className={ClassNames.deleteConfirmBtn}>Confirmar</button>
+                        <button onClick={() => setDeleteConfirm(null)} className={ClassNames.deleteConfirmNoBtn}>No</button>
                       </div>
                     ) : (
-                      <button onClick={() => setDeleteConfirm(goal.id)} className={S.goalDeleteBtn}>
+                      <button onClick={() => setDeleteConfirm(goal.id)} className={ClassNames.goalDeleteBtn}>
                         <Trash2 className="w-3.5 h-3.5" />
                       </button>
                     )}
@@ -254,31 +254,31 @@ export default function MetasPage() {
 
                 {/* Currency badge */}
                 {(goal.currency ?? 'ARS') === 'USD' && (
-                  <span className={S.currencyBadge}>
+                  <span className={ClassNames.currencyBadge}>
                     USD 🇺🇸
                   </span>
                 )}
 
                 {/* Progress bar */}
-                <div className={S.progressSection}>
-                  <div className={S.progressRow}>
-                    <span className={S.progressCurrent}>{formatGoal(Number(goal.current_amount), goal.currency ?? 'ARS')}</span>
-                    <span className={S.progressTarget}>{formatGoal(Number(goal.target_amount), goal.currency ?? 'ARS')}</span>
+                <div className={ClassNames.progressSection}>
+                  <div className={ClassNames.progressRow}>
+                    <span className={ClassNames.progressCurrent}>{formatGoal(Number(goal.current_amount), goal.currency ?? 'ARS')}</span>
+                    <span className={ClassNames.progressTarget}>{formatGoal(Number(goal.target_amount), goal.currency ?? 'ARS')}</span>
                   </div>
-                  <div className={S.progressBar}>
+                  <div className={ClassNames.progressBar}>
                     <div
-                      className={S.progressFill}
+                      className={ClassNames.progressFill}
                       style={{ width: `${pct}%`, backgroundColor: goal.color }}
                     />
                   </div>
-                  <div className={S.progressMeta}>
+                  <div className={ClassNames.progressMeta}>
                     <span className="text-xs font-semibold" style={{ color: goal.color }}>{pct.toFixed(1)}%</span>
-                    {!completed && <span className={S.progressRemaining}>Falta {formatGoal(remaining, goal.currency ?? 'ARS')}</span>}
-                    {completed && <span className={S.progressCompleted}>¡Meta alcanzada!</span>}
+                    {!completed && <span className={ClassNames.progressRemaining}>Falta {formatGoal(remaining, goal.currency ?? 'ARS')}</span>}
+                    {completed && <span className={ClassNames.progressCompleted}>¡Meta alcanzada!</span>}
                   </div>
                   {/* ARS equivalent for USD goals */}
                   {(goal.currency ?? 'ARS') === 'USD' && blueRate && (
-                    <p className={S.arsEquivalent}>
+                    <p className={ClassNames.arsEquivalent}>
                       ≈ {formatARS(Number(goal.current_amount) * blueRate.venta)} / {formatARS(Number(goal.target_amount) * blueRate.venta)} (blue)
                     </p>
                   )}
@@ -298,7 +298,7 @@ export default function MetasPage() {
 
                 {/* Add/subtract amount */}
                 {addingTo === goal.id ? (
-                  <div className={S.addInputWrap}>
+                  <div className={ClassNames.addInputWrap}>
                     <input
                       type="number"
                       placeholder="Monto (negativo para restar)"
@@ -306,12 +306,12 @@ export default function MetasPage() {
                       onChange={e => setAddAmount(e.target.value)}
                       onKeyDown={e => e.key === 'Enter' && handleAddAmount(goal)}
                       autoFocus
-                      className={S.addInput}
+                      className={ClassNames.addInput}
                     />
-                    <button onClick={() => handleAddAmount(goal)} className={S.addOkBtn}>
+                    <button onClick={() => handleAddAmount(goal)} className={ClassNames.addOkBtn}>
                       OK
                     </button>
-                    <button onClick={() => { setAddingTo(null); setAddAmount('') }} className={S.addCancelBtn}>
+                    <button onClick={() => { setAddingTo(null); setAddAmount('') }} className={ClassNames.addCancelBtn}>
                       <X className="w-4 h-4" />
                     </button>
                   </div>
@@ -319,7 +319,7 @@ export default function MetasPage() {
                   <div className="flex gap-2 mt-2">
                     <button
                       onClick={() => { setAddingTo(goal.id); setAddAmount('') }}
-                      className={S.addSavingBtn}
+                      className={ClassNames.addSavingBtn}
                     >
                       <ChevronUp className="w-4 h-4" />
                       Agregar ahorro
@@ -334,20 +334,20 @@ export default function MetasPage() {
 
       {/* Form modal */}
       {showForm && (
-        <div className={S.modalOverlay}>
-          <div className={S.modalBox}>
-            <div className={S.modalHeader}>
-              <h3 className={S.modalTitle}>{editGoal ? 'Editar meta' : 'Nueva meta'}</h3>
-              <button onClick={() => setShowForm(false)} className={S.modalCloseBtn}>
+        <div className={ClassNames.modalOverlay}>
+          <div className={ClassNames.modalBox}>
+            <div className={ClassNames.modalHeader}>
+              <h3 className={ClassNames.modalTitle}>{editGoal ? 'Editar meta' : 'Nueva meta'}</h3>
+              <button onClick={() => setShowForm(false)} className={ClassNames.modalCloseBtn}>
                 <X className="w-5 h-5" />
               </button>
             </div>
 
-            <div className={S.modalFields}>
+            <div className={ClassNames.modalFields}>
               {/* Currency toggle */}
               <div>
-                <label className={S.fieldLabel}>Moneda</label>
-                <div className={S.currencyToggleWrap}>
+                <label className={ClassNames.fieldLabel}>Moneda</label>
+                <div className={ClassNames.currencyToggleWrap}>
                   {(['ARS', 'USD'] as const).map(cur => (
                     <button
                       key={cur}
@@ -355,9 +355,9 @@ export default function MetasPage() {
                       className={
                         form.currency === cur
                           ? cur === 'USD'
-                            ? S.currencyBtnUsdActive
-                            : S.currencyBtnArsActive
-                          : S.currencyBtnInactive
+                            ? ClassNames.currencyBtnUsdActive
+                            : ClassNames.currencyBtnArsActive
+                          : ClassNames.currencyBtnInactive
                       }
                     >
                       {cur === 'ARS' ? '🇦🇷 Pesos' : '🇺🇸 Dólares'}
@@ -367,68 +367,68 @@ export default function MetasPage() {
               </div>
 
               <div>
-                <label className={S.fieldLabel}>Nombre de la meta</label>
+                <label className={ClassNames.fieldLabel}>Nombre de la meta</label>
                 <input
                   type="text"
                   placeholder="Ej: Vacaciones, Auto, Fondo de emergencia"
                   value={form.name}
                   onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
-                  className={S.textInput}
+                  className={ClassNames.textInput}
                 />
               </div>
 
               <div>
-                <label className={S.fieldLabel}>Descripción (opcional)</label>
+                <label className={ClassNames.fieldLabel}>Descripción (opcional)</label>
                 <input
                   type="text"
                   placeholder="Ej: Viaje a Brasil en diciembre"
                   value={form.description}
                   onChange={e => setForm(f => ({ ...f, description: e.target.value }))}
-                  className={S.textInput}
+                  className={ClassNames.textInput}
                 />
               </div>
 
-              <div className={S.amountGrid}>
+              <div className={ClassNames.amountGrid}>
                 <div>
-                  <label className={S.fieldLabel}>Meta ({form.currency})</label>
+                  <label className={ClassNames.fieldLabel}>Meta ({form.currency})</label>
                   <input
                     type="number"
                     placeholder="0"
                     value={form.target_amount}
                     onChange={e => setForm(f => ({ ...f, target_amount: e.target.value }))}
-                    className={S.textInput}
+                    className={ClassNames.textInput}
                   />
                 </div>
                 <div>
-                  <label className={S.fieldLabel}>Ya ahorrado</label>
+                  <label className={ClassNames.fieldLabel}>Ya ahorrado</label>
                   <input
                     type="number"
                     placeholder="0"
                     value={form.current_amount}
                     onChange={e => setForm(f => ({ ...f, current_amount: e.target.value }))}
-                    className={S.textInput}
+                    className={ClassNames.textInput}
                   />
                 </div>
               </div>
 
               <div>
-                <label className={S.fieldLabel}>Fecha límite (opcional)</label>
+                <label className={ClassNames.fieldLabel}>Fecha límite (opcional)</label>
                 <input
                   type="date"
                   value={form.deadline}
                   onChange={e => setForm(f => ({ ...f, deadline: e.target.value }))}
-                  className={S.textInput}
+                  className={ClassNames.textInput}
                 />
               </div>
 
               <div>
-                <label className={S.fieldLabel}>Color</label>
-                <div className={S.colorRow}>
+                <label className={ClassNames.fieldLabel}>Color</label>
+                <div className={ClassNames.colorRow}>
                   {COLORS.map(color => (
                     <button
                       key={color}
                       onClick={() => setForm(f => ({ ...f, color }))}
-                      className={S.colorSwatch}
+                      className={ClassNames.colorSwatch}
                       style={{
                         backgroundColor: color,
                         outline: form.color === color ? `3px solid ${color}` : 'none',
@@ -440,14 +440,14 @@ export default function MetasPage() {
               </div>
             </div>
 
-            <div className={S.modalActions}>
-              <button onClick={() => setShowForm(false)} className={S.cancelBtn}>
+            <div className={ClassNames.modalActions}>
+              <button onClick={() => setShowForm(false)} className={ClassNames.cancelBtn}>
                 Cancelar
               </button>
               <button
                 onClick={handleSave}
                 disabled={saving || !form.name.trim() || !form.target_amount}
-                className={S.saveBtn}
+                className={ClassNames.saveBtn}
               >
                 {saving ? 'Guardando...' : editGoal ? 'Actualizar' : 'Crear meta'}
               </button>
@@ -458,7 +458,7 @@ export default function MetasPage() {
 
       {/* Toast */}
       {toast && (
-        <div className={S.toast}>
+        <div className={ClassNames.toast}>
           <CheckCircle className="w-4 h-4" />
           {toast}
         </div>

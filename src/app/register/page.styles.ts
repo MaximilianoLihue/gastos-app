@@ -1,4 +1,4 @@
-export const S = {
+export const ClassNames = {
   root: "min-h-screen bg-gray-900 flex items-center justify-center p-4",
   successRoot: "min-h-screen bg-gray-900 flex items-center justify-center p-4",
   successContent: "text-center max-w-md",

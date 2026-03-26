@@ -4,7 +4,7 @@ import DollarCard from '@/components/DollarCard'
 import { DollarSign, RefreshCw, TrendingUp, Info } from 'lucide-react'
 import { format, startOfMonth, endOfMonth } from 'date-fns'
 import { es } from 'date-fns/locale'
-import { S } from './page.styles'
+import { ClassNames } from './page.styles'
 
 function formatARS(value: number): string {
   return new Intl.NumberFormat('es-AR', {
@@ -82,34 +82,34 @@ export default async function DolarPage() {
   ]
 
   return (
-    <div className={S.root}>
+    <div className={ClassNames.root}>
       {/* Header */}
-      <div className={S.pageHeader}>
+      <div className={ClassNames.pageHeader}>
         <div>
-          <h1 className={S.pageTitle}>Cotización del Dólar</h1>
-          <p className={S.pageSub}>
+          <h1 className={ClassNames.pageTitle}>Cotización del Dólar</h1>
+          <p className={ClassNames.pageSub}>
             <RefreshCw className="w-3.5 h-3.5" />
             Datos actualizados automáticamente vía{' '}
             <a
               href="https://dolarapi.com"
               target="_blank"
               rel="noopener noreferrer"
-              className={S.pageSubLink}
+              className={ClassNames.pageSubLink}
             >
               dolarapi.com
             </a>
           </p>
         </div>
-        <div className={S.lastUpdatedWrap}>
-          <p className={S.lastUpdatedLabel}>Última actualización</p>
-          <p className={S.lastUpdatedValue}>
+        <div className={ClassNames.lastUpdatedWrap}>
+          <p className={ClassNames.lastUpdatedLabel}>Última actualización</p>
+          <p className={ClassNames.lastUpdatedValue}>
             {format(now, "HH:mm 'hs'", { locale: es })}
           </p>
         </div>
       </div>
 
       {/* Dollar rates grid */}
-      <div className={S.ratesGrid}>
+      <div className={ClassNames.ratesGrid}>
         {ratesConfig.map(({ key, title, badge, highlight }) => (
           <DollarCard
             key={key}
@@ -123,12 +123,12 @@ export default async function DolarPage() {
 
       {/* Spread comparison */}
       {rates.oficial && rates.blue && (
-        <div className={S.spreadCard}>
-          <h3 className={S.spreadTitle}>
+        <div className={ClassNames.spreadCard}>
+          <h3 className={ClassNames.spreadTitle}>
             <TrendingUp className="w-4 h-4 text-emerald-400" />
             Brecha cambiaria
           </h3>
-          <div className={S.spreadGrid}>
+          <div className={ClassNames.spreadGrid}>
             {[
               {
                 label: 'Blue vs Oficial',
@@ -161,12 +161,12 @@ export default async function DolarPage() {
                   }]
                 : []),
             ].map((item, i) => (
-              <div key={i} className={S.spreadItem}>
-                <p className={S.spreadItemLabel}>{item.label}</p>
+              <div key={i} className={ClassNames.spreadItem}>
+                <p className={ClassNames.spreadItemLabel}>{item.label}</p>
                 <p className={`text-lg font-bold ${item.color}`}>
                   +{item.pct.toFixed(1)}%
                 </p>
-                <p className={S.spreadItemSub}>
+                <p className={ClassNames.spreadItemSub}>
                   +{formatARS(item.diff)}
                 </p>
               </div>
@@ -176,28 +176,28 @@ export default async function DolarPage() {
       )}
 
       {/* USD with surplus */}
-      <div className={S.usdCard}>
-        <h3 className={S.usdTitle}>
+      <div className={ClassNames.usdCard}>
+        <h3 className={ClassNames.usdTitle}>
           <DollarSign className="w-4 h-4 text-emerald-400" />
           ¿Cuántos dólares podés comprar?
         </h3>
-        <p className={S.usdSub}>
+        <p className={ClassNames.usdSub}>
           Calculado con tu superávit del mes actual:{' '}
-          <span className={surplus > 0 ? S.usdSurplusPos : S.usdSurplusNeg}>
+          <span className={surplus > 0 ? ClassNames.usdSurplusPos : ClassNames.usdSurplusNeg}>
             {formatARS(surplus)}
           </span>
         </p>
 
         {surplus <= 0 ? (
-          <div className={S.noSurplusBox}>
+          <div className={ClassNames.noSurplusBox}>
             <Info className="w-4 h-4 text-amber-400 flex-shrink-0 mt-0.5" />
-            <p className={S.noSurplusText}>
+            <p className={ClassNames.noSurplusText}>
               Tu superávit este mes es ${formatARS(totalIngresos - totalGastos)}. Para poder calcular cuántos
               dólares podés comprar, tus ingresos deben superar tus gastos.
             </p>
           </div>
         ) : (
-          <div className={S.usdGrid}>
+          <div className={ClassNames.usdGrid}>
             {[
               {
                 label: 'Al dólar oficial',
@@ -236,13 +236,13 @@ export default async function DolarPage() {
               .map((item, i) => (
                 <div
                   key={i}
-                  className={`${S.usdItem} ${item.bg}`}
+                  className={`${ClassNames.usdItem} ${item.bg}`}
                 >
-                  <p className={S.usdItemLabel}>{item.label}</p>
+                  <p className={ClassNames.usdItemLabel}>{item.label}</p>
                   <p className={`text-2xl font-bold ${item.color}`}>
                     {formatUSD(item.usd)}
                   </p>
-                  <p className={S.usdItemSub}>
+                  <p className={ClassNames.usdItemSub}>
                     Venta: {formatARS(item.rate ?? 0)}
                   </p>
                 </div>
@@ -250,7 +250,7 @@ export default async function DolarPage() {
           </div>
         )}
 
-        <div className={S.usdFootnote}>
+        <div className={ClassNames.usdFootnote}>
           <Info className="w-3.5 h-3.5 flex-shrink-0 mt-0.5" />
           <p>
             Cálculo informativo: Superávit ÷ precio de venta. Las operaciones en dólar

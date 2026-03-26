@@ -6,7 +6,7 @@ import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 import { seedDefaultCategories } from '@/lib/defaultCategories'
 import { TrendingUp, Mail, Lock, Loader2, Eye, EyeOff, CheckCircle } from 'lucide-react'
-import { S } from './page.styles'
+import { ClassNames } from './page.styles'
 
 export default function RegisterPage() {
   const router = useRouter()
@@ -71,18 +71,18 @@ export default function RegisterPage() {
 
   if (success) {
     return (
-      <div className={S.successRoot}>
-        <div className={S.successContent}>
-          <div className={S.successIcon}>
+      <div className={ClassNames.successRoot}>
+        <div className={ClassNames.successContent}>
+          <div className={ClassNames.successIcon}>
             <CheckCircle className="w-8 h-8 text-emerald-400" />
           </div>
-          <h2 className={S.successTitle}>¡Registro exitoso!</h2>
-          <p className={S.successText}>
+          <h2 className={ClassNames.successTitle}>¡Registro exitoso!</h2>
+          <p className={ClassNames.successText}>
             Revisá tu email para confirmar tu cuenta. Si no ves el email, revisá tu carpeta de spam.
           </p>
           <Link
             href="/login"
-            className={S.successLink}
+            className={ClassNames.successLink}
           >
             Ir al login
           </Link>
@@ -92,63 +92,63 @@ export default function RegisterPage() {
   }
 
   return (
-    <div className={S.root}>
+    <div className={ClassNames.root}>
       {/* Background decoration */}
-      <div className={S.bgDecor}>
-        <div className={S.bgBlobTR} />
-        <div className={S.bgBlobBL} />
+      <div className={ClassNames.bgDecor}>
+        <div className={ClassNames.bgBlobTR} />
+        <div className={ClassNames.bgBlobBL} />
       </div>
 
-      <div className={S.content}>
+      <div className={ClassNames.content}>
         {/* Logo */}
-        <div className={S.logoWrap}>
-          <div className={S.logoIcon}>
+        <div className={ClassNames.logoWrap}>
+          <div className={ClassNames.logoIcon}>
             <TrendingUp className="w-7 h-7 text-white" />
           </div>
-          <h1 className={S.appName}>GastosApp</h1>
-          <p className={S.tagline}>Creá tu cuenta gratis</p>
+          <h1 className={ClassNames.appName}>GastosApp</h1>
+          <p className={ClassNames.tagline}>Creá tu cuenta gratis</p>
         </div>
 
         {/* Card */}
-        <div className={S.card}>
-          <form onSubmit={handleSubmit} className={S.form}>
+        <div className={ClassNames.card}>
+          <form onSubmit={handleSubmit} className={ClassNames.form}>
             {/* Email */}
             <div>
-              <label className={S.label}>
+              <label className={ClassNames.label}>
                 Email
               </label>
-              <div className={S.inputWrap}>
-                <Mail className={S.inputIcon} />
+              <div className={ClassNames.inputWrap}>
+                <Mail className={ClassNames.inputIcon} />
                 <input
                   type="email"
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="tu@email.com"
-                  className={S.input}
+                  className={ClassNames.input}
                 />
               </div>
             </div>
 
             {/* Password */}
             <div>
-              <label className={S.label}>
+              <label className={ClassNames.label}>
                 Contraseña
               </label>
-              <div className={S.inputWrap}>
-                <Lock className={S.inputIcon} />
+              <div className={ClassNames.inputWrap}>
+                <Lock className={ClassNames.inputIcon} />
                 <input
                   type={showPassword ? 'text' : 'password'}
                   required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="Mínimo 6 caracteres"
-                  className={S.inputWithToggle}
+                  className={ClassNames.inputWithToggle}
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className={S.toggleBtn}
+                  className={ClassNames.toggleBtn}
                 >
                   {showPassword ? (
                     <EyeOff className="w-4 h-4" />
@@ -161,32 +161,32 @@ export default function RegisterPage() {
 
             {/* Confirm Password */}
             <div>
-              <label className={S.label}>
+              <label className={ClassNames.label}>
                 Confirmar contraseña
               </label>
-              <div className={S.inputWrap}>
-                <Lock className={S.inputIcon} />
+              <div className={ClassNames.inputWrap}>
+                <Lock className={ClassNames.inputIcon} />
                 <input
                   type={showPassword ? 'text' : 'password'}
                   required
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   placeholder="Repetí tu contraseña"
-                  className={S.input}
+                  className={ClassNames.input}
                 />
               </div>
             </div>
 
             {error && (
-              <div className={S.errorWrap}>
-                <p className={S.errorText}>{error}</p>
+              <div className={ClassNames.errorWrap}>
+                <p className={ClassNames.errorText}>{error}</p>
               </div>
             )}
 
             <button
               type="submit"
               disabled={loading}
-              className={S.submitBtn}
+              className={ClassNames.submitBtn}
             >
               {loading ? (
                 <>
@@ -199,12 +199,12 @@ export default function RegisterPage() {
             </button>
           </form>
 
-          <div className={S.cardFooter}>
-            <p className={S.cardFooterText}>
+          <div className={ClassNames.cardFooter}>
+            <p className={ClassNames.cardFooterText}>
               ¿Ya tenés cuenta?{' '}
               <Link
                 href="/login"
-                className={S.cardFooterLink}
+                className={ClassNames.cardFooterLink}
               >
                 Iniciá sesión
               </Link>
@@ -212,7 +212,7 @@ export default function RegisterPage() {
           </div>
         </div>
 
-        <p className={S.hint}>
+        <p className={ClassNames.hint}>
           Al registrarte, se crearán categorías de ejemplo para que puedas empezar rápido.
         </p>
       </div>

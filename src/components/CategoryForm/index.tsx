@@ -2,7 +2,7 @@
 
 import { Category, TransactionType } from '@/lib/types'
 import { X, Save, Loader2 } from 'lucide-react'
-import { S } from './categoryForm.styles'
+import { ClassNames } from './categoryForm.styles'
 import { useCategoryForm } from './logic/useCategoryForm'
 
 interface CategoryFormProps {
@@ -26,25 +26,25 @@ export default function CategoryForm({
     useCategoryForm({ category, onSuccess })
 
   return (
-    <div className={S.overlay}>
-      <div className={S.modal}>
+    <div className={ClassNames.overlay}>
+      <div className={ClassNames.modal}>
         {/* Header */}
-        <div className={S.header}>
-          <h3 className={S.headerTitle}>
+        <div className={ClassNames.header}>
+          <h3 className={ClassNames.headerTitle}>
             {category ? 'Editar categoría' : 'Nueva categoría'}
           </h3>
           <button
             onClick={onCancel}
-            className={S.closeBtn}
+            className={ClassNames.closeBtn}
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className={S.form}>
+        <form onSubmit={handleSubmit} className={ClassNames.form}>
           {/* Name */}
           <div>
-            <label className={S.label}>
+            <label className={ClassNames.label}>
               Nombre
             </label>
             <input
@@ -55,27 +55,27 @@ export default function CategoryForm({
                 setForm((prev) => ({ ...prev, name: e.target.value }))
               }
               placeholder="Ej: Supermercado, Sueldo..."
-              className={S.input}
+              className={ClassNames.input}
             />
           </div>
 
           {/* Type */}
           <div>
-            <label className={S.label}>
+            <label className={ClassNames.label}>
               Tipo
             </label>
-            <div className={S.typeGrid}>
+            <div className={ClassNames.typeGrid}>
               {(['ingreso', 'gasto'] as TransactionType[]).map((t) => (
                 <button
                   key={t}
                   type="button"
                   onClick={() => setForm((prev) => ({ ...prev, type: t }))}
-                  className={`${S.typeBtnBase} ${
+                  className={`${ClassNames.typeBtnBase} ${
                     form.type === t
                       ? t === 'ingreso'
-                        ? S.typeBtnIngreso
-                        : S.typeBtnGasto
-                      : S.typeBtnInactive
+                        ? ClassNames.typeBtnIngreso
+                        : ClassNames.typeBtnGasto
+                      : ClassNames.typeBtnInactive
                   }`}
                 >
                   {t === 'ingreso' ? 'Ingreso' : 'Gasto'}
@@ -86,28 +86,28 @@ export default function CategoryForm({
 
           {/* Color */}
           <div>
-            <label className={S.label}>
+            <label className={ClassNames.label}>
               Color
             </label>
-            <div className={S.colorSwatchWrap}>
+            <div className={ClassNames.colorSwatchWrap}>
               {PRESET_COLORS.map((color) => (
                 <button
                   key={color}
                   type="button"
                   onClick={() => setForm((prev) => ({ ...prev, color }))}
                   style={{ backgroundColor: color }}
-                  className={`${S.colorSwatchBase} ${
+                  className={`${ClassNames.colorSwatchBase} ${
                     form.color === color
-                      ? S.colorSwatchActive
-                      : S.colorSwatchInactive
+                      ? ClassNames.colorSwatchActive
+                      : ClassNames.colorSwatchInactive
                   }`}
                   aria-label={`Color ${color}`}
                 />
               ))}
             </div>
-            <div className={S.colorPickerRow}>
+            <div className={ClassNames.colorPickerRow}>
               <div
-                className={S.colorPreview}
+                className={ClassNames.colorPreview}
                 style={{ backgroundColor: form.color }}
               />
               <input
@@ -116,30 +116,30 @@ export default function CategoryForm({
                 onChange={(e) =>
                   setForm((prev) => ({ ...prev, color: e.target.value }))
                 }
-                className={S.colorInput}
+                className={ClassNames.colorInput}
               />
             </div>
           </div>
 
           {error && (
-            <p className={S.error}>
+            <p className={ClassNames.error}>
               {error}
             </p>
           )}
 
           {/* Actions */}
-          <div className={S.actions}>
+          <div className={ClassNames.actions}>
             <button
               type="button"
               onClick={onCancel}
-              className={S.cancelBtn}
+              className={ClassNames.cancelBtn}
             >
               Cancelar
             </button>
             <button
               type="submit"
               disabled={loading}
-              className={S.submitBtn}
+              className={ClassNames.submitBtn}
             >
               {loading ? (
                 <Loader2 className="w-4 h-4 animate-spin" />

@@ -1,4 +1,4 @@
-export const S = {
+export const ClassNames = {
   overlay: "fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm",
   modal: "bg-gray-800 border border-gray-700 rounded-2xl w-full max-w-md shadow-2xl",
   header: "flex items-center justify-between px-6 py-4 border-b border-gray-700",

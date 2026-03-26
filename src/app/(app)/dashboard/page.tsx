@@ -15,7 +15,7 @@ import {
   Sparkles,
 } from 'lucide-react'
 import Link from 'next/link'
-import { S } from './page.styles'
+import { ClassNames } from './page.styles'
 
 function formatARS(value: number): string {
   return new Intl.NumberFormat('es-AR', {
@@ -187,28 +187,28 @@ export default async function DashboardPage() {
   const mesActual = format(now, 'MMMM yyyy', { locale: es })
 
   return (
-    <div className={S.root}>
+    <div className={ClassNames.root}>
       {/* Welcome */}
       <div>
-        <h1 className={S.welcomeTitle}>
+        <h1 className={ClassNames.welcomeTitle}>
           {format(now, "EEEE, d 'de' MMMM", { locale: es })}
         </h1>
-        <p className={S.welcomeSub}>
+        <p className={ClassNames.welcomeSub}>
           Resumen del mes de{' '}
-          <span className={S.welcomeHighlight}>{mesActual}</span>
+          <span className={ClassNames.welcomeHighlight}>{mesActual}</span>
         </p>
       </div>
 
       {/* Stats grid */}
-      <div className={S.statsGrid}>
+      <div className={ClassNames.statsGrid}>
         {/* Ingresos */}
-        <div className={S.statCard}>
-          <div className={S.statCardHeader}>
-            <div className={S.statIconIngreso}>
+        <div className={ClassNames.statCard}>
+          <div className={ClassNames.statCardHeader}>
+            <div className={ClassNames.statIconIngreso}>
               <TrendingUp className="w-5 h-5 text-emerald-400" />
             </div>
             {ingresosChange !== 0 && (
-              <span className={ingresosChange >= 0 ? S.statChangePos : S.statChangeNeg}>
+              <span className={ingresosChange >= 0 ? ClassNames.statChangePos : ClassNames.statChangeNeg}>
                 {ingresosChange >= 0 ? (
                   <ArrowUpRight className="w-3 h-3" />
                 ) : (
@@ -218,19 +218,19 @@ export default async function DashboardPage() {
               </span>
             )}
           </div>
-          <p className={S.statLabel}>Ingresos</p>
-          <p className={S.statValue}>{formatARS(totalIngresos)}</p>
-          <p className={S.statSub}>vs mes anterior</p>
+          <p className={ClassNames.statLabel}>Ingresos</p>
+          <p className={ClassNames.statValue}>{formatARS(totalIngresos)}</p>
+          <p className={ClassNames.statSub}>vs mes anterior</p>
         </div>
 
         {/* Gastos */}
-        <div className={S.statCard}>
-          <div className={S.statCardHeader}>
-            <div className={S.statIconGasto}>
+        <div className={ClassNames.statCard}>
+          <div className={ClassNames.statCardHeader}>
+            <div className={ClassNames.statIconGasto}>
               <TrendingDown className="w-5 h-5 text-red-400" />
             </div>
             {gastosChange !== 0 && (
-              <span className={gastosChange <= 0 ? S.statChangePos : S.statChangeNeg}>
+              <span className={gastosChange <= 0 ? ClassNames.statChangePos : ClassNames.statChangeNeg}>
                 {gastosChange >= 0 ? (
                   <ArrowUpRight className="w-3 h-3" />
                 ) : (
@@ -240,41 +240,41 @@ export default async function DashboardPage() {
               </span>
             )}
           </div>
-          <p className={S.statLabel}>Gastos</p>
-          <p className={S.statValue}>{formatARS(totalGastos)}</p>
-          <p className={S.statSub}>vs mes anterior</p>
+          <p className={ClassNames.statLabel}>Gastos</p>
+          <p className={ClassNames.statValue}>{formatARS(totalGastos)}</p>
+          <p className={ClassNames.statSub}>vs mes anterior</p>
         </div>
 
         {/* Balance */}
-        <div className={S.statCard}>
-          <div className={S.statCardHeader}>
-            <div className={balance >= 0 ? S.statIconBluePos : S.statIconOrangeNeg}>
+        <div className={ClassNames.statCard}>
+          <div className={ClassNames.statCardHeader}>
+            <div className={balance >= 0 ? ClassNames.statIconBluePos : ClassNames.statIconOrangeNeg}>
               <Wallet className={`w-5 h-5 ${balance >= 0 ? 'text-blue-400' : 'text-orange-400'}`} />
             </div>
           </div>
-          <p className={S.statLabel}>Balance</p>
-          <p className={balance >= 0 ? S.statValueBalancePos : S.statValueBalanceNeg}>
+          <p className={ClassNames.statLabel}>Balance</p>
+          <p className={balance >= 0 ? ClassNames.statValueBalancePos : ClassNames.statValueBalanceNeg}>
             {formatARS(balance)}
           </p>
-          <p className={S.statSub}>Ingresos - Gastos</p>
+          <p className={ClassNames.statSub}>Ingresos - Gastos</p>
         </div>
 
         {/* USD con blue */}
-        <div className={S.statCard}>
-          <div className={S.statCardHeader}>
-            <div className={S.statIconAmber}>
+        <div className={ClassNames.statCard}>
+          <div className={ClassNames.statCardHeader}>
+            <div className={ClassNames.statIconAmber}>
               <DollarSign className="w-5 h-5 text-amber-400" />
             </div>
           </div>
-          <p className={S.statLabel}>USD (dólar blue)</p>
-          <p className={S.statValueAmber}>
+          <p className={ClassNames.statLabel}>USD (dólar blue)</p>
+          <p className={ClassNames.statValueAmber}>
             {usdPosibles.blue !== null
               ? formatUSD(usdPosibles.blue)
               : surplus <= 0
               ? 'Sin superávit'
               : 'N/D'}
           </p>
-          <p className={S.statSub}>
+          <p className={ClassNames.statSub}>
             {dolarRates.blue
               ? `Venta: ${formatARS(dolarRates.blue.venta)}`
               : 'Cotización no disponible'}
@@ -284,30 +284,30 @@ export default async function DashboardPage() {
 
       {/* Top spending categories */}
       {topCategorias.length > 0 && (
-        <div className={S.topCatCard}>
-          <div className={S.topCatHeader}>
-            <h3 className={S.topCatTitle}>¿En qué gasto más?</h3>
-            <span className={S.topCatMonth}>{mesActual}</span>
+        <div className={ClassNames.topCatCard}>
+          <div className={ClassNames.topCatHeader}>
+            <h3 className={ClassNames.topCatTitle}>¿En qué gasto más?</h3>
+            <span className={ClassNames.topCatMonth}>{mesActual}</span>
           </div>
-          <div className={S.topCatGrid}>
+          <div className={ClassNames.topCatGrid}>
             {topCategorias.map((cat, i) => {
               const pct = totalGastos > 0 ? (cat.total / totalGastos) * 100 : 0
               return (
-                <div key={cat.name} className={S.topCatRow}>
-                  <div className={S.topCatMeta}>
-                    <div className={S.topCatLeft}>
-                      <span className={S.topCatRank}>#{i + 1}</span>
-                      <div className={S.topCatColorDot} style={{ backgroundColor: cat.color }} />
-                      <span className={S.topCatName}>{cat.name}</span>
+                <div key={cat.name} className={ClassNames.topCatRow}>
+                  <div className={ClassNames.topCatMeta}>
+                    <div className={ClassNames.topCatLeft}>
+                      <span className={ClassNames.topCatRank}>#{i + 1}</span>
+                      <div className={ClassNames.topCatColorDot} style={{ backgroundColor: cat.color }} />
+                      <span className={ClassNames.topCatName}>{cat.name}</span>
                     </div>
-                    <div className={S.topCatRight}>
-                      <span className={S.topCatAmount}>{formatARS(cat.total)}</span>
-                      <span className={S.topCatPct}>{pct.toFixed(1)}%</span>
+                    <div className={ClassNames.topCatRight}>
+                      <span className={ClassNames.topCatAmount}>{formatARS(cat.total)}</span>
+                      <span className={ClassNames.topCatPct}>{pct.toFixed(1)}%</span>
                     </div>
                   </div>
-                  <div className={S.topCatBar}>
+                  <div className={ClassNames.topCatBar}>
                     <div
-                      className={S.topCatBarFill}
+                      className={ClassNames.topCatBarFill}
                       style={{ width: `${pct}%`, backgroundColor: cat.color }}
                     />
                   </div>
@@ -316,9 +316,9 @@ export default async function DashboardPage() {
             })}
           </div>
           {totalGastos > 0 && (
-            <div className={S.topCatFooter}>
-              <span className={S.topCatFooterLabel}>Total gastado este mes</span>
-              <span className={S.topCatFooterValue}>{formatARS(totalGastos)}</span>
+            <div className={ClassNames.topCatFooter}>
+              <span className={ClassNames.topCatFooterLabel}>Total gastado este mes</span>
+              <span className={ClassNames.topCatFooterValue}>{formatARS(totalGastos)}</span>
             </div>
           )}
         </div>
@@ -326,13 +326,13 @@ export default async function DashboardPage() {
 
       {/* Spending alerts */}
       {alerts.length > 0 && (
-        <div className={S.alertsCard}>
-          <div className={S.alertsHeader}>
+        <div className={ClassNames.alertsCard}>
+          <div className={ClassNames.alertsHeader}>
             <AlertTriangle className="w-5 h-5 text-amber-400" />
-            <h3 className={S.alertsTitle}>Señales de gasto</h3>
-            <span className={S.alertsMonth}>{mesActual}</span>
+            <h3 className={ClassNames.alertsTitle}>Señales de gasto</h3>
+            <span className={ClassNames.alertsMonth}>{mesActual}</span>
           </div>
-          <div className={S.alertsGrid}>
+          <div className={ClassNames.alertsGrid}>
             {alerts.map((alert) => {
               const isSpike = alert.type === 'spike'
               const isHighShare = alert.type === 'high_share'
@@ -349,24 +349,24 @@ export default async function DashboardPage() {
               return (
                 <div
                   key={alert.category}
-                  className={isSpike ? S.alertItemSpike : isHighShare ? S.alertItemHighShare : S.alertItemNew}
+                  className={isSpike ? ClassNames.alertItemSpike : isHighShare ? ClassNames.alertItemHighShare : ClassNames.alertItemNew}
                 >
-                  <div className={S.alertItemRow}>
+                  <div className={ClassNames.alertItemRow}>
                     <div
-                      className={S.alertItemDot}
+                      className={ClassNames.alertItemDot}
                       style={{ backgroundColor: alert.color }}
                     />
-                    <span className={S.alertItemCat}>{alert.category}</span>
-                    <Icon className={isSpike ? S.alertIconSpike : isHighShare ? S.alertIconHighShare : S.alertIconNew} />
+                    <span className={ClassNames.alertItemCat}>{alert.category}</span>
+                    <Icon className={isSpike ? ClassNames.alertIconSpike : isHighShare ? ClassNames.alertIconHighShare : ClassNames.alertIconNew} />
                   </div>
-                  <p className={isSpike ? S.alertMsgSpike : isHighShare ? S.alertMsgHighShare : S.alertMsgNew}>{alert.message}</p>
-                  <div className={S.alertAmounts}>
+                  <p className={isSpike ? ClassNames.alertMsgSpike : isHighShare ? ClassNames.alertMsgHighShare : ClassNames.alertMsgNew}>{alert.message}</p>
+                  <div className={ClassNames.alertAmounts}>
                     <span>Este mes: <span className="text-white font-medium">{formatARS(alert.thisMonth)}</span></span>
                     {alert.lastMonth > 0 && (
                       <span>Anterior: <span className="text-gray-300">{formatARS(alert.lastMonth)}</span></span>
                     )}
                   </div>
-                  <p className={S.alertSuggestion}>{suggestion}</p>
+                  <p className={ClassNames.alertSuggestion}>{suggestion}</p>
                 </div>
               )
             })}
@@ -375,60 +375,60 @@ export default async function DashboardPage() {
       )}
 
       {/* Bottom grid */}
-      <div className={S.bottomGrid}>
+      <div className={ClassNames.bottomGrid}>
         {/* Recent transactions */}
-        <div className={S.recentCard}>
-          <div className={S.recentHeader}>
-            <h3 className={S.recentTitle}>Últimas transacciones</h3>
+        <div className={ClassNames.recentCard}>
+          <div className={ClassNames.recentHeader}>
+            <h3 className={ClassNames.recentTitle}>Últimas transacciones</h3>
             <Link
               href="/transacciones"
-              className={S.recentLink}
+              className={ClassNames.recentLink}
             >
               Ver todas
             </Link>
           </div>
 
           {!recentTxs || recentTxs.length === 0 ? (
-            <div className={S.emptyWrap}>
+            <div className={ClassNames.emptyWrap}>
               <Receipt className="w-10 h-10 text-gray-600 mb-3" />
-              <p className={S.emptyText}>No hay transacciones aún</p>
+              <p className={ClassNames.emptyText}>No hay transacciones aún</p>
               <Link
                 href="/transacciones"
-                className={S.emptyLink}
+                className={ClassNames.emptyLink}
               >
                 Agregar primera transacción
               </Link>
             </div>
           ) : (
-            <div className={S.txList}>
+            <div className={ClassNames.txList}>
               {(recentTxs as Transaction[]).map((tx) => (
                 <div
                   key={tx.id}
-                  className={S.txRow}
+                  className={ClassNames.txRow}
                 >
                   <div
-                    className={S.txIconWrap}
+                    className={ClassNames.txIconWrap}
                     style={{
                       backgroundColor: `${tx.category?.color ?? '#6b7280'}20`,
                     }}
                   >
                     <div
-                      className={S.txIconDot}
+                      className={ClassNames.txIconDot}
                       style={{
                         backgroundColor: tx.category?.color ?? '#6b7280',
                       }}
                     />
                   </div>
-                  <div className={S.txMeta}>
-                    <p className={S.txDesc}>
+                  <div className={ClassNames.txMeta}>
+                    <p className={ClassNames.txDesc}>
                       {tx.description || tx.category?.name || 'Sin descripción'}
                     </p>
-                    <p className={S.txSub}>
+                    <p className={ClassNames.txSub}>
                       {tx.category?.name ?? 'Sin categoría'} •{' '}
                       {format(new Date(tx.date + 'T00:00:00'), 'd MMM', { locale: es })}
                     </p>
                   </div>
-                  <span className={tx.type === 'ingreso' ? S.txAmountIngreso : S.txAmountGasto}>
+                  <span className={tx.type === 'ingreso' ? ClassNames.txAmountIngreso : ClassNames.txAmountGasto}>
                     {tx.type === 'ingreso' ? '+' : '-'}
                     {formatARS(Number(tx.amount))}
                   </span>
@@ -439,23 +439,23 @@ export default async function DashboardPage() {
         </div>
 
         {/* Quick stats */}
-        <div className={S.quickStats}>
+        <div className={ClassNames.quickStats}>
           {/* Spending progress */}
-          <div className={S.thisMonthCard}>
-            <h3 className={S.thisMonthTitle}>Este mes</h3>
-            <div className={S.thisMonthInner}>
+          <div className={ClassNames.thisMonthCard}>
+            <h3 className={ClassNames.thisMonthTitle}>Este mes</h3>
+            <div className={ClassNames.thisMonthInner}>
               <div>
-                <div className={S.progressMeta}>
-                  <span className={S.progressLabel}>Gasto vs Ingreso</span>
-                  <span className={S.progressValue}>
+                <div className={ClassNames.progressMeta}>
+                  <span className={ClassNames.progressLabel}>Gasto vs Ingreso</span>
+                  <span className={ClassNames.progressValue}>
                     {totalIngresos > 0
                       ? `${Math.min(Math.round((totalGastos / totalIngresos) * 100), 100)}%`
                       : '0%'}
                   </span>
                 </div>
-                <div className={S.progressBar}>
+                <div className={ClassNames.progressBar}>
                   <div
-                    className={totalGastos > totalIngresos ? S.progressFillBad : S.progressFillGood}
+                    className={totalGastos > totalIngresos ? ClassNames.progressFillBad : ClassNames.progressFillGood}
                     style={{
                       width: `${
                         totalIngresos > 0
@@ -467,14 +467,14 @@ export default async function DashboardPage() {
                 </div>
               </div>
 
-              <div className={S.miniGrid}>
-                <div className={S.miniCard}>
-                  <p className={S.miniLabel}>Transacciones</p>
-                  <p className={S.miniValue}>{transactions.length}</p>
+              <div className={ClassNames.miniGrid}>
+                <div className={ClassNames.miniCard}>
+                  <p className={ClassNames.miniLabel}>Transacciones</p>
+                  <p className={ClassNames.miniValue}>{transactions.length}</p>
                 </div>
-                <div className={S.miniCard}>
-                  <p className={S.miniLabel}>Superávit</p>
-                  <p className={surplus > 0 ? S.miniSurplusPos : S.miniSurplusNeg}>
+                <div className={ClassNames.miniCard}>
+                  <p className={ClassNames.miniLabel}>Superávit</p>
+                  <p className={surplus > 0 ? ClassNames.miniSurplusPos : ClassNames.miniSurplusNeg}>
                     {formatARS(surplus)}
                   </p>
                 </div>
@@ -484,26 +484,26 @@ export default async function DashboardPage() {
 
           {/* Dollar quick view */}
           {dolarRates.blue && (
-            <div className={S.dolarCard}>
-              <div className={S.dolarHeader}>
-                <h3 className={S.dolarTitle}>Dólar blue</h3>
+            <div className={ClassNames.dolarCard}>
+              <div className={ClassNames.dolarHeader}>
+                <h3 className={ClassNames.dolarTitle}>Dólar blue</h3>
                 <Link
                   href="/dolar"
-                  className={S.dolarLink}
+                  className={ClassNames.dolarLink}
                 >
                   Ver todo
                 </Link>
               </div>
-              <div className={S.dolarRow}>
+              <div className={ClassNames.dolarRow}>
                 <div>
-                  <p className={S.dolarBuyLabel}>Compra</p>
-                  <p className={S.dolarBuyValue}>
+                  <p className={ClassNames.dolarBuyLabel}>Compra</p>
+                  <p className={ClassNames.dolarBuyValue}>
                     {formatARS(dolarRates.blue.compra)}
                   </p>
                 </div>
                 <div className="text-right">
-                  <p className={S.dolarSellLabel}>Venta</p>
-                  <p className={S.dolarSellValue}>
+                  <p className={ClassNames.dolarSellLabel}>Venta</p>
+                  <p className={ClassNames.dolarSellValue}>
                     {formatARS(dolarRates.blue.venta)}
                   </p>
                 </div>

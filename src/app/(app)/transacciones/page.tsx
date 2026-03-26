@@ -30,7 +30,7 @@ import {
 } from 'lucide-react'
 import { format, parse, isValid, startOfMonth, endOfMonth, subMonths, addMonths } from 'date-fns'
 import { es } from 'date-fns/locale'
-import { S } from './page.styles'
+import { ClassNames } from './page.styles'
 
 const PAGE_SIZE = 15
 
@@ -870,112 +870,112 @@ function TransaccionesPageInner() {
   const totalPages = Math.ceil(total / PAGE_SIZE)
 
   return (
-    <div className={S.root}>
+    <div className={ClassNames.root}>
       {/* Header */}
-      <div className={S.pageHeader}>
+      <div className={ClassNames.pageHeader}>
         <div>
-          <h1 className={S.pageTitle}>Transacciones</h1>
-          <div className={S.monthNav}>
+          <h1 className={ClassNames.pageTitle}>Transacciones</h1>
+          <div className={ClassNames.monthNav}>
             <button
               onClick={() => { setCurrentMonth(m => subMonths(m, 1)); setPage(1) }}
-              className={S.monthNavBtn}
+              className={ClassNames.monthNavBtn}
             >
               <ChevronLeft className="w-4 h-4" />
             </button>
-            <span className={S.monthLabel}>
+            <span className={ClassNames.monthLabel}>
               {format(currentMonth, 'MMMM yyyy', { locale: es })}
             </span>
             <button
               onClick={() => { setCurrentMonth(m => addMonths(m, 1)); setPage(1) }}
               disabled={format(addMonths(currentMonth, 1), 'yyyy-MM') > format(new Date(), 'yyyy-MM')}
-              className={S.monthNavBtnDisabled}
+              className={ClassNames.monthNavBtnDisabled}
             >
               <ChevronRight className="w-4 h-4" />
             </button>
             {format(currentMonth, 'yyyy-MM') !== format(new Date(), 'yyyy-MM') && (
               <button
                 onClick={() => { setCurrentMonth(startOfMonth(new Date())); setPage(1) }}
-                className={S.todayBtn}
+                className={ClassNames.todayBtn}
               >
                 Hoy
               </button>
             )}
-            <span className={S.totalCount}>
+            <span className={ClassNames.totalCount}>
               · {total} transacción{total !== 1 ? 'es' : ''}
             </span>
           </div>
         </div>
-        <div className={S.headerActions}>
+        <div className={ClassNames.headerActions}>
           <input
             ref={fileInputRef}
             type="file"
             accept=".xlsx,.xls,.csv"
-            className={S.fileInputHidden}
+            className={ClassNames.fileInputHidden}
             onChange={handleImportExcel}
           />
           <input
             ref={pdfInputRef}
             type="file"
             accept=".pdf"
-            className={S.fileInputHidden}
+            className={ClassNames.fileInputHidden}
             onChange={handleImportPDF}
           />
           <input
             ref={receiptInputRef}
             type="file"
             accept="image/*"
-            className={S.fileInputHidden}
+            className={ClassNames.fileInputHidden}
             onChange={handleImportReceipt}
           />
           <button
             onClick={handleCleanDuplicates}
             disabled={cleaning || importing}
-            className={S.btnDuplicates}
+            className={ClassNames.btnDuplicates}
             title="Eliminar transacciones duplicadas"
           >
             <X className="w-4 h-4" />
-            <span className={S.btnLabel}>{cleaning ? 'Limpiando...' : 'Duplicados'}</span>
+            <span className={ClassNames.btnLabel}>{cleaning ? 'Limpiando...' : 'Duplicados'}</span>
           </button>
           <button
             onClick={() => setShowClearConfirm(true)}
             disabled={cleaning || importing}
-            className={S.btnClearAll}
+            className={ClassNames.btnClearAll}
             title="Eliminar todas las transacciones"
           >
             <Trash2 className="w-4 h-4" />
-            <span className={S.btnLabel}>Limpiar</span>
+            <span className={ClassNames.btnLabel}>Limpiar</span>
           </button>
 
           {/* Import dropdown */}
-          <div ref={importMenuRef} className={S.menuWrap}>
+          <div ref={importMenuRef} className={ClassNames.menuWrap}>
             <button
               onClick={() => { setShowImportMenu(v => !v); setShowExportMenu(false) }}
               disabled={importing || receiptParsing}
-              className={S.btnImport}
+              className={ClassNames.btnImport}
             >
               <Upload className="w-4 h-4 text-yellow-400" />
-              <span className={S.btnLabel}>{importing ? 'Importando...' : receiptParsing ? 'Analizando...' : 'Importar'}</span>
+              <span className={ClassNames.btnLabel}>{importing ? 'Importando...' : receiptParsing ? 'Analizando...' : 'Importar'}</span>
               <ChevronDown className="w-3.5 h-3.5 opacity-60" />
             </button>
             {showImportMenu && (
-              <div className={S.menuDropdown}>
+              <div className={ClassNames.menuDropdown}>
                 <button
                   onClick={() => { setShowImportMenu(false); fileInputRef.current?.click() }}
-                  className={S.menuItem}
+                  className={ClassNames.menuItem}
                 >
                   <FileSpreadsheet className="w-4 h-4 text-yellow-400" />
                   Excel
                 </button>
                 <button
                   onClick={() => { setShowImportMenu(false); pdfInputRef.current?.click() }}
-                  className={S.menuItem}
+                  className={ClassNames.menuItem}
                 >
                   <FileText className="w-4 h-4 text-red-400" />
                   PDF Mercado Pago
                 </button>
                 <button
                   onClick={() => { setShowImportMenu(false); receiptInputRef.current?.click() }}
-                  className={S.menuItem}
+                  className={ClassNames.menuItem}
                 >
                   <Camera className="w-4 h-4 text-purple-400" />
                   Comprobante (OCR)
@@ -985,27 +985,27 @@ function TransaccionesPageInner() {
           </div>
 
           {/* Export dropdown */}
-          <div ref={exportMenuRef} className={S.menuWrap}>
+          <div ref={exportMenuRef} className={ClassNames.menuWrap}>
             <button
               onClick={() => { setShowExportMenu(v => !v); setShowImportMenu(false) }}
-              className={S.btnExport}
+              className={ClassNames.btnExport}
             >
               <Download className="w-4 h-4 text-emerald-400" />
-              <span className={S.btnLabel}>Exportar</span>
+              <span className={ClassNames.btnLabel}>Exportar</span>
               <ChevronDown className="w-3.5 h-3.5 opacity-60" />
             </button>
             {showExportMenu && (
-              <div className={S.menuDropdown}>
+              <div className={ClassNames.menuDropdown}>
                 <button
                   onClick={() => { setShowExportMenu(false); handleExportExcel() }}
-                  className={S.menuItem}
+                  className={ClassNames.menuItem}
                 >
                   <FileSpreadsheet className="w-4 h-4 text-emerald-400" />
                   Excel
                 </button>
                 <button
                   onClick={() => { setShowExportMenu(false); handleExportPDF() }}
-                  className={S.menuItem}
+                  className={ClassNames.menuItem}
                 >
                   <FileText className="w-4 h-4 text-red-400" />
                   PDF
@@ -1015,7 +1015,7 @@ function TransaccionesPageInner() {
           </div>
           <button
             onClick={() => { setEditTx(null); setShowForm(true) }}
-            className={S.btnNew}
+            className={ClassNames.btnNew}
           >
             <Plus className="w-4 h-4" />
             Nueva
@@ -1024,31 +1024,31 @@ function TransaccionesPageInner() {
       </div>
 
       {/* Filters */}
-      <div className={S.filtersRow}>
-        <div className={S.searchWrap}>
+      <div className={ClassNames.filtersRow}>
+        <div className={ClassNames.searchWrap}>
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
           <input
             type="text"
             placeholder="Buscar por descripción..."
             value={search}
             onChange={(e) => { setSearch(e.target.value); setPage(1) }}
-            className={S.searchInput}
+            className={ClassNames.searchInput}
           />
         </div>
-        <div className={S.filterGroup}>
+        <div className={ClassNames.filterGroup}>
           <Filter className="w-4 h-4 text-gray-500 flex-shrink-0" />
           {(['all', 'ingreso', 'gasto'] as const).map((type) => (
             <button
               key={type}
               onClick={() => { setFilterType(type); setPage(1) }}
-              className={`${S.filterBtnBase} ${
+              className={`${ClassNames.filterBtnBase} ${
                 filterType === type
                   ? type === 'ingreso'
-                    ? S.filterBtnIngreso
+                    ? ClassNames.filterBtnIngreso
                     : type === 'gasto'
-                    ? S.filterBtnGasto
-                    : S.filterBtnAll
-                  : S.filterBtnInactive
+                    ? ClassNames.filterBtnGasto
+                    : ClassNames.filterBtnAll
+                  : ClassNames.filterBtnInactive
               }`}
             >
               {type === 'all' ? 'Todos' : type === 'ingreso' ? 'Ingresos' : 'Gastos'}
@@ -1056,10 +1056,10 @@ function TransaccionesPageInner() {
           ))}
 
           {/* Category filter dropdown */}
-          <div className={S.catFilterWrap}>
+          <div className={ClassNames.catFilterWrap}>
             <button
               onClick={() => setCatDropdownOpen(o => !o)}
-              className={filterCategory !== 'all' ? S.catFilterBtnActive : S.catFilterBtnInactive}
+              className={filterCategory !== 'all' ? ClassNames.catFilterBtnActive : ClassNames.catFilterBtnInactive}
             >
               <Tag className="w-3.5 h-3.5" />
               {filterCategory === 'all'
@@ -1071,29 +1071,29 @@ function TransaccionesPageInner() {
             </button>
 
             {catDropdownOpen && (
-              <div className={S.catDropdown}>
-                <div className={S.catDropdownInner}>
+              <div className={ClassNames.catDropdown}>
+                <div className={ClassNames.catDropdownInner}>
                   <button
                     onClick={() => { setFilterCategory('all'); setPage(1); setCatDropdownOpen(false) }}
-                    className={filterCategory === 'all' ? S.catDropdownItemActive : S.catDropdownItemInactive}
+                    className={filterCategory === 'all' ? ClassNames.catDropdownItemActive : ClassNames.catDropdownItemInactive}
                   >
                     Todas las categorías
                   </button>
                   <button
                     onClick={() => { setFilterCategory('none'); setPage(1); setCatDropdownOpen(false) }}
-                    className={filterCategory === 'none' ? S.catDropdownItemActive : S.catDropdownItemInactive}
+                    className={filterCategory === 'none' ? ClassNames.catDropdownItemActive : ClassNames.catDropdownItemInactive}
                   >
-                    <div className={S.catDropdownDot} />
+                    <div className={ClassNames.catDropdownDot} />
                     Sin categoría
                   </button>
-                  <div className={S.catDropdownDivider} />
+                  <div className={ClassNames.catDropdownDivider} />
                   {allCategories.map(cat => (
                     <button
                       key={cat.id}
                       onClick={() => { setFilterCategory(cat.id); setPage(1); setCatDropdownOpen(false) }}
-                      className={filterCategory === cat.id ? S.catDropdownItemActive : S.catDropdownItemInactive}
+                      className={filterCategory === cat.id ? ClassNames.catDropdownItemActive : ClassNames.catDropdownItemInactive}
                     >
-                      <div className={S.catDropdownColorDot} style={{ backgroundColor: cat.color }} />
+                      <div className={ClassNames.catDropdownColorDot} style={{ backgroundColor: cat.color }} />
                       {cat.name}
                     </button>
                   ))}
@@ -1105,40 +1105,40 @@ function TransaccionesPageInner() {
       </div>
 
       {/* Table */}
-      <div className={S.tableWrap}>
-        <div className={S.tableScroll}>
-          <table className={S.table}>
+      <div className={ClassNames.tableWrap}>
+        <div className={ClassNames.tableScroll}>
+          <table className={ClassNames.table}>
             <thead>
-              <tr className={S.thead}>
-                <th className={S.th}>
+              <tr className={ClassNames.thead}>
+                <th className={ClassNames.th}>
                   <button
                     onClick={() => { setSortDesc(!sortDesc); setPage(1) }}
-                    className={S.thSortBtn}
+                    className={ClassNames.thSortBtn}
                   >
                     Fecha <ArrowUpDown className="w-3 h-3" />
                   </button>
                 </th>
-                <th className={S.th}>Tipo</th>
-                <th className={S.th}>Categoría</th>
-                <th className={S.th}>Descripción</th>
-                <th className={S.thRight}>Monto</th>
-                <th className={S.thRight}>Acciones</th>
+                <th className={ClassNames.th}>Tipo</th>
+                <th className={ClassNames.th}>Categoría</th>
+                <th className={ClassNames.th}>Descripción</th>
+                <th className={ClassNames.thRight}>Monto</th>
+                <th className={ClassNames.thRight}>Acciones</th>
               </tr>
             </thead>
             <tbody>
               {loading ? (
                 Array.from({ length: 5 }).map((_, i) => (
-                  <tr key={i} className={S.trLoading}>
+                  <tr key={i} className={ClassNames.trLoading}>
                     {Array.from({ length: 6 }).map((_, j) => (
-                      <td key={j} className={S.tdLoading}>
-                        <div className={S.skeletonCell} />
+                      <td key={j} className={ClassNames.tdLoading}>
+                        <div className={ClassNames.skeletonCell} />
                       </td>
                     ))}
                   </tr>
                 ))
               ) : transactions.length === 0 ? (
-                <tr className={S.trEmpty}>
-                  <td colSpan={6} className={S.tdEmpty}>
+                <tr className={ClassNames.trEmpty}>
+                  <td colSpan={6} className={ClassNames.tdEmpty}>
                     {search || filterType !== 'all'
                       ? 'No se encontraron transacciones con ese filtro'
                       : 'No hay transacciones aún. ¡Crea la primera!'}
@@ -1146,25 +1146,25 @@ function TransaccionesPageInner() {
                 </tr>
               ) : (
                 transactions.map((tx) => (
-                  <tr key={tx.id} className={S.trData}>
-                    <td className={S.tdDate}>
+                  <tr key={tx.id} className={ClassNames.trData}>
+                    <td className={ClassNames.tdDate}>
                       {format(new Date(tx.date + 'T00:00:00'), 'dd/MM/yyyy', { locale: es })}
                     </td>
-                    <td className={S.tdType}>
-                      <span className={tx.type === 'ingreso' ? S.typeBadgeIngreso : S.typeBadgeGasto}>
+                    <td className={ClassNames.tdType}>
+                      <span className={tx.type === 'ingreso' ? ClassNames.typeBadgeIngreso : ClassNames.typeBadgeGasto}>
                         {tx.type === 'ingreso' ? 'Ingreso' : 'Gasto'}
                       </span>
                     </td>
-                    <td className={S.tdCategory}>
+                    <td className={ClassNames.tdCategory}>
                       {tx.category ? (
-                        <div className={S.catCellRow}>
-                          <div className={S.catCellDot} style={{ backgroundColor: tx.category.color }} />
-                          <span className={S.catCellName}>{tx.category.name}</span>
+                        <div className={ClassNames.catCellRow}>
+                          <div className={ClassNames.catCellDot} style={{ backgroundColor: tx.category.color }} />
+                          <span className={ClassNames.catCellName}>{tx.category.name}</span>
                         </div>
                       ) : (
-                        <div className={S.noCatWrap}>
+                        <div className={ClassNames.noCatWrap}>
                           {savingCatTx === tx.id ? (
-                            <div className={S.noCatSpinner}>
+                            <div className={ClassNames.noCatSpinner}>
                               <svg className="w-3.5 h-3.5 animate-spin text-emerald-400" viewBox="0 0 24 24" fill="none">
                                 <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
                                 <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"/>
@@ -1173,23 +1173,23 @@ function TransaccionesPageInner() {
                           ) : (
                           <button
                             onClick={(e) => { e.stopPropagation(); setQuickCatTx(quickCatTx === tx.id ? null : tx.id) }}
-                            className={S.noCatBtn}
+                            className={ClassNames.noCatBtn}
                           >
                             Categoría
                           </button>
                           )}
                           {quickCatTx === tx.id && (
-                            <div className={S.quickCatDropdown}>
-                              <div className={S.quickCatInner}>
+                            <div className={ClassNames.quickCatDropdown}>
+                              <div className={ClassNames.quickCatInner}>
                                 {allCategories
                                   .filter(c => c.type === tx.type)
                                   .map(cat => (
                                     <button
                                       key={cat.id}
                                       onClick={(e) => { e.stopPropagation(); handleQuickCategory(tx.id, cat.id) }}
-                                      className={S.quickCatItem}
+                                      className={ClassNames.quickCatItem}
                                     >
-                                      <div className={S.quickCatDot} style={{ backgroundColor: cat.color }} />
+                                      <div className={ClassNames.quickCatDot} style={{ backgroundColor: cat.color }} />
                                       {cat.name}
                                     </button>
                                   ))}
@@ -1199,38 +1199,38 @@ function TransaccionesPageInner() {
                         </div>
                       )}
                     </td>
-                    <td className={S.tdDesc}>
-                      {tx.description || <span className={S.tdDescEmpty}>—</span>}
+                    <td className={ClassNames.tdDesc}>
+                      {tx.description || <span className={ClassNames.tdDescEmpty}>—</span>}
                     </td>
-                    <td className={S.tdAmount}>
-                      <span className={tx.type === 'ingreso' ? S.amountIngreso : S.amountGasto}>
+                    <td className={ClassNames.tdAmount}>
+                      <span className={tx.type === 'ingreso' ? ClassNames.amountIngreso : ClassNames.amountGasto}>
                         {tx.type === 'ingreso' ? '+' : '-'}
                         {formatAmount(Number(tx.amount), tx.currency ?? 'ARS')}
                       </span>
-                      <span className={(tx.currency ?? 'ARS') === 'USD' ? S.currencyBadgeUsd : S.currencyBadgeArs}>
+                      <span className={(tx.currency ?? 'ARS') === 'USD' ? ClassNames.currencyBadgeUsd : ClassNames.currencyBadgeArs}>
                         {tx.currency ?? 'ARS'}
                       </span>
                     </td>
-                    <td className={S.tdActions}>
-                      <div className={S.actionsWrap}>
+                    <td className={ClassNames.tdActions}>
+                      <div className={ClassNames.actionsWrap}>
                         <button
                           onClick={() => handleEdit(tx)}
-                          className={S.editBtn}
+                          className={ClassNames.editBtn}
                           title="Editar"
                         >
                           <Pencil className="w-3.5 h-3.5" />
                         </button>
                         {deleteConfirm === tx.id ? (
-                          <div className={S.deleteConfirmWrap}>
+                          <div className={ClassNames.deleteConfirmWrap}>
                             <button
                               onClick={() => handleDelete(tx.id)}
-                              className={S.deleteConfirmYes}
+                              className={ClassNames.deleteConfirmYes}
                             >
                               Confirmar
                             </button>
                             <button
                               onClick={() => setDeleteConfirm(null)}
-                              className={S.deleteConfirmNo}
+                              className={ClassNames.deleteConfirmNo}
                             >
                               No
                             </button>
@@ -1238,7 +1238,7 @@ function TransaccionesPageInner() {
                         ) : (
                           <button
                             onClick={() => setDeleteConfirm(tx.id)}
-                            className={S.deleteBtn}
+                            className={ClassNames.deleteBtn}
                             title="Eliminar"
                           >
                             <Trash2 className="w-3.5 h-3.5" />
@@ -1255,26 +1255,26 @@ function TransaccionesPageInner() {
 
         {/* Pagination */}
         {totalPages > 1 && (
-          <div className={S.pagination}>
-            <p className={S.paginationInfo}>
+          <div className={ClassNames.pagination}>
+            <p className={ClassNames.paginationInfo}>
               Mostrando {(page - 1) * PAGE_SIZE + 1}–
               {Math.min(page * PAGE_SIZE, total)} de {total}
             </p>
-            <div className={S.paginationControls}>
+            <div className={ClassNames.paginationControls}>
               <button
                 onClick={() => setPage(Math.max(1, page - 1))}
                 disabled={page === 1}
-                className={S.paginationBtn}
+                className={ClassNames.paginationBtn}
               >
                 <ChevronLeft className="w-4 h-4" />
               </button>
-              <span className={S.paginationLabel}>
+              <span className={ClassNames.paginationLabel}>
                 {page} / {totalPages}
               </span>
               <button
                 onClick={() => setPage(Math.min(totalPages, page + 1))}
                 disabled={page === totalPages}
-                className={S.paginationBtn}
+                className={ClassNames.paginationBtn}
               >
                 <ChevronRight className="w-4 h-4" />
               </button>
@@ -1294,43 +1294,43 @@ function TransaccionesPageInner() {
 
       {/* Import result modal */}
       {importResult && (
-        <div className={S.modalOverlay}>
-          <div className={S.modalBox}>
-            <div className={S.modalHeader}>
-              <h3 className={S.modalTitle}>Resultado de importación</h3>
-              <button onClick={() => setImportResult(null)} className={S.modalCloseBtn}>
+        <div className={ClassNames.modalOverlay}>
+          <div className={ClassNames.modalBox}>
+            <div className={ClassNames.modalHeader}>
+              <h3 className={ClassNames.modalTitle}>Resultado de importación</h3>
+              <button onClick={() => setImportResult(null)} className={ClassNames.modalCloseBtn}>
                 <X className="w-5 h-5" />
               </button>
             </div>
 
-            <div className={S.importResultRow}>
+            <div className={ClassNames.importResultRow}>
               {importResult.imported > 0 ? (
                 <CheckCircle className="w-8 h-8 text-emerald-400 flex-shrink-0" />
               ) : (
                 <AlertCircle className="w-8 h-8 text-red-400 flex-shrink-0" />
               )}
               <div>
-                <p className={S.importResultText}>
+                <p className={ClassNames.importResultText}>
                   {cleaning
                     ? `${importResult.imported} duplicados eliminados`
                     : `${importResult.imported} de ${importResult.total} transacciones importadas`}
                 </p>
                 {importResult.errors.length > 0 && (
-                  <p className={S.importResultSub}>{importResult.errors[0]}</p>
+                  <p className={ClassNames.importResultSub}>{importResult.errors[0]}</p>
                 )}
               </div>
             </div>
 
             {importResult.errors.length > 0 && (
-              <div className={S.importErrorBox}>
-                <p className={S.importErrorLabel}>Errores:</p>
+              <div className={ClassNames.importErrorBox}>
+                <p className={ClassNames.importErrorLabel}>Errores:</p>
                 {importResult.errors.map((err, i) => (
-                  <p key={i} className={S.importErrorItem}>• {err}</p>
+                  <p key={i} className={ClassNames.importErrorItem}>• {err}</p>
                 ))}
               </div>
             )}
 
-            <p className={S.importTip}>
+            <p className={ClassNames.importTip}>
               Tip:{' '}
               <button onClick={downloadTemplate} className="underline hover:text-gray-300 transition-colors">
                 descargá la plantilla
@@ -1340,7 +1340,7 @@ function TransaccionesPageInner() {
 
             <button
               onClick={() => setImportResult(null)}
-              className={S.importCloseBtn}
+              className={ClassNames.importCloseBtn}
             >
               Cerrar
             </button>
@@ -1350,56 +1350,56 @@ function TransaccionesPageInner() {
 
       {/* Receipt preview modal */}
       {receiptPreview && (
-        <div className={S.modalOverlay}>
-          <div className={S.modalBox}>
-            <div className={S.modalHeader}>
-              <h3 className={S.receiptTitle}>
+        <div className={ClassNames.modalOverlay}>
+          <div className={ClassNames.modalBox}>
+            <div className={ClassNames.modalHeader}>
+              <h3 className={ClassNames.receiptTitle}>
                 <Camera className="w-5 h-5 text-purple-400" />
                 Comprobante detectado
               </h3>
-              <button onClick={() => setReceiptPreview(null)} className={S.modalCloseBtn}>
+              <button onClick={() => setReceiptPreview(null)} className={ClassNames.modalCloseBtn}>
                 <X className="w-5 h-5" />
               </button>
             </div>
-            <div className={S.receiptRows}>
-              <div className={S.receiptRow}>
-                <span className={S.receiptLabel}>Fecha</span>
+            <div className={ClassNames.receiptRows}>
+              <div className={ClassNames.receiptRow}>
+                <span className={ClassNames.receiptLabel}>Fecha</span>
                 <input
                   type="date"
                   value={receiptPreview.date}
                   onChange={e => setReceiptPreview(p => p ? { ...p, date: e.target.value } : p)}
-                  className={S.receiptDateInput}
+                  className={ClassNames.receiptDateInput}
                 />
               </div>
-              <div className={S.receiptRow}>
-                <span className={S.receiptLabel}>Descripción</span>
+              <div className={ClassNames.receiptRow}>
+                <span className={ClassNames.receiptLabel}>Descripción</span>
                 <input
                   type="text"
                   value={receiptPreview.description}
                   onChange={e => setReceiptPreview(p => p ? { ...p, description: e.target.value } : p)}
-                  className={S.receiptDescInput}
+                  className={ClassNames.receiptDescInput}
                 />
               </div>
-              <div className={S.receiptRow}>
-                <span className={S.receiptLabel}>Monto</span>
+              <div className={ClassNames.receiptRow}>
+                <span className={ClassNames.receiptLabel}>Monto</span>
                 <input
                   type="number"
                   value={receiptPreview.amount}
                   onChange={e => setReceiptPreview(p => p ? { ...p, amount: Number(e.target.value) } : p)}
-                  className={S.receiptAmountInput}
+                  className={ClassNames.receiptAmountInput}
                 />
               </div>
-              <div className={S.receiptTypeRow}>
-                <span className={S.receiptLabel}>Tipo</span>
-                <div className={S.receiptTypeButtons}>
+              <div className={ClassNames.receiptTypeRow}>
+                <span className={ClassNames.receiptLabel}>Tipo</span>
+                <div className={ClassNames.receiptTypeButtons}>
                   {(['gasto', 'ingreso'] as const).map(t => (
                     <button
                       key={t}
                       onClick={() => setReceiptPreview(p => p ? { ...p, type: t } : p)}
                       className={
                         receiptPreview.type === t
-                          ? t === 'gasto' ? S.receiptTypeBtnGastoActive : S.receiptTypeBtnIngresoActive
-                          : S.receiptTypeBtnInactive
+                          ? t === 'gasto' ? ClassNames.receiptTypeBtnGastoActive : ClassNames.receiptTypeBtnIngresoActive
+                          : ClassNames.receiptTypeBtnInactive
                       }
                     >
                       {t === 'gasto' ? 'Gasto' : 'Ingreso'}
@@ -1408,16 +1408,16 @@ function TransaccionesPageInner() {
                 </div>
               </div>
             </div>
-            <div className={S.receiptActions}>
+            <div className={ClassNames.receiptActions}>
               <button
                 onClick={() => setReceiptPreview(null)}
-                className={S.receiptCancelBtn}
+                className={ClassNames.receiptCancelBtn}
               >
                 Cancelar
               </button>
               <button
                 onClick={handleConfirmReceipt}
-                className={S.receiptConfirmBtn}
+                className={ClassNames.receiptConfirmBtn}
               >
                 Agregar
               </button>
@@ -1428,25 +1428,25 @@ function TransaccionesPageInner() {
 
       {/* Clear all confirmation modal */}
       {showClearConfirm && (
-        <div className={S.modalOverlay}>
-          <div className={S.cleanModalBox}>
-            <div className={S.clearAllIcon}>
+        <div className={ClassNames.modalOverlay}>
+          <div className={ClassNames.cleanModalBox}>
+            <div className={ClassNames.clearAllIcon}>
               <Trash2 className="w-7 h-7 text-red-400" />
             </div>
-            <h3 className={S.cleanTitle}>¿Seguro querés eliminar las transacciones?</h3>
-            <p className={S.cleanText}>Esta acción no se puede deshacer. Se eliminarán <strong className="text-white">todas</strong> las transacciones.</p>
-            <div className={S.clearAllActions}>
+            <h3 className={ClassNames.cleanTitle}>¿Seguro querés eliminar las transacciones?</h3>
+            <p className={ClassNames.cleanText}>Esta acción no se puede deshacer. Se eliminarán <strong className="text-white">todas</strong> las transacciones.</p>
+            <div className={ClassNames.clearAllActions}>
               <button
                 onClick={() => setShowClearConfirm(false)}
                 disabled={clearing}
-                className={S.clearAllCancelBtn}
+                className={ClassNames.clearAllCancelBtn}
               >
                 Cancelar
               </button>
               <button
                 onClick={handleClearAll}
                 disabled={clearing}
-                className={S.clearAllConfirmBtn}
+                className={ClassNames.clearAllConfirmBtn}
               >
                 {clearing ? 'Eliminando...' : 'Sí, eliminar todo'}
               </button>
@@ -1457,30 +1457,30 @@ function TransaccionesPageInner() {
 
       {/* Clean duplicates result modal */}
       {cleanResult !== null && (
-        <div className={S.modalOverlay}>
-          <div className={S.cleanModalBox}>
+        <div className={ClassNames.modalOverlay}>
+          <div className={ClassNames.cleanModalBox}>
             {cleanResult.deleted > 0 ? (
               <>
-                <div className={S.cleanSuccessIcon}>
+                <div className={ClassNames.cleanSuccessIcon}>
                   <CheckCircle className="w-7 h-7 text-emerald-400" />
                 </div>
-                <h3 className={S.cleanTitle}>¡Listo!</h3>
-                <p className={S.cleanText}>
+                <h3 className={ClassNames.cleanTitle}>¡Listo!</h3>
+                <p className={ClassNames.cleanText}>
                   Se eliminaron <span className="text-white font-semibold">{cleanResult.deleted}</span> transacciones duplicadas correctamente.
                 </p>
               </>
             ) : (
               <>
-                <div className={S.cleanNoneIcon}>
+                <div className={ClassNames.cleanNoneIcon}>
                   <CheckCircle className="w-7 h-7 text-blue-400" />
                 </div>
-                <h3 className={S.cleanTitle}>Sin duplicados</h3>
-                <p className={S.cleanText}>No se encontraron transacciones duplicadas.</p>
+                <h3 className={ClassNames.cleanTitle}>Sin duplicados</h3>
+                <p className={ClassNames.cleanText}>No se encontraron transacciones duplicadas.</p>
               </>
             )}
             <button
               onClick={() => setCleanResult(null)}
-              className={S.cleanOkBtn}
+              className={ClassNames.cleanOkBtn}
             >
               OK
             </button>

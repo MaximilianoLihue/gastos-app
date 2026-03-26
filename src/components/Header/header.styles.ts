@@ -1,4 +1,4 @@
-export const S = {
+export const ClassNames = {
   root: "h-16 bg-gray-800/50 border-b border-gray-700/50 backdrop-blur-sm flex items-center justify-between px-6",
   leftWrap: "lg:ml-0 ml-10",
   title: "text-white font-semibold text-lg",

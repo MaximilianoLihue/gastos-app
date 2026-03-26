@@ -17,7 +17,7 @@ import {
 } from 'lucide-react'
 import { format, subMonths, startOfMonth, endOfMonth, parseISO } from 'date-fns'
 import { es } from 'date-fns/locale'
-import { S } from './page.styles'
+import { ClassNames } from './page.styles'
 
 function formatARS(value: number): string {
   return new Intl.NumberFormat('es-AR', {
@@ -141,80 +141,80 @@ export default function ReportesPage() {
   }
 
   return (
-    <div className={S.root}>
+    <div className={ClassNames.root}>
       {/* Header */}
-      <div className={S.pageHeader}>
+      <div className={ClassNames.pageHeader}>
         <div>
-          <h1 className={S.pageTitle}>Reportes</h1>
-          <p className={S.pageSub}>
+          <h1 className={ClassNames.pageTitle}>Reportes</h1>
+          <p className={ClassNames.pageSub}>
             Análisis de los últimos {monthsToShow} meses
           </p>
         </div>
-        <div className={S.headerActions}>
+        <div className={ClassNames.headerActions}>
           <button
             onClick={handleExportExcel}
-            className={S.exportBtn}
+            className={ClassNames.exportBtn}
           >
             <FileSpreadsheet className="w-4 h-4 text-emerald-400" />
-            <span className={S.exportBtnLabel}>Excel</span>
+            <span className={ClassNames.exportBtnLabel}>Excel</span>
           </button>
           <button
             onClick={handleExportPDF}
-            className={S.exportBtn}
+            className={ClassNames.exportBtn}
           >
             <FileText className="w-4 h-4 text-red-400" />
-            <span className={S.exportBtnLabel}>PDF</span>
+            <span className={ClassNames.exportBtnLabel}>PDF</span>
           </button>
         </div>
       </div>
 
       {/* Summary cards */}
-      <div className={S.summaryGrid}>
-        <div className={S.summaryCard}>
-          <div className={S.summaryIconIngreso}>
+      <div className={ClassNames.summaryGrid}>
+        <div className={ClassNames.summaryCard}>
+          <div className={ClassNames.summaryIconIngreso}>
             <TrendingUp className="w-4 h-4 text-emerald-400" />
           </div>
-          <p className={S.summaryLabel}>Total Ingresos</p>
-          <p className={S.summaryValueIngreso}>{formatARS(totalIngresos)}</p>
+          <p className={ClassNames.summaryLabel}>Total Ingresos</p>
+          <p className={ClassNames.summaryValueIngreso}>{formatARS(totalIngresos)}</p>
         </div>
 
-        <div className={S.summaryCard}>
-          <div className={S.summaryIconGasto}>
+        <div className={ClassNames.summaryCard}>
+          <div className={ClassNames.summaryIconGasto}>
             <TrendingDown className="w-4 h-4 text-red-400" />
           </div>
-          <p className={S.summaryLabel}>Total Gastos</p>
-          <p className={S.summaryValueGasto}>{formatARS(totalGastos)}</p>
+          <p className={ClassNames.summaryLabel}>Total Gastos</p>
+          <p className={ClassNames.summaryValueGasto}>{formatARS(totalGastos)}</p>
         </div>
 
-        <div className={S.summaryCard}>
-          <div className={S.summaryIconBlue}>
+        <div className={ClassNames.summaryCard}>
+          <div className={ClassNames.summaryIconBlue}>
             <BarChart3 className="w-4 h-4 text-blue-400" />
           </div>
-          <p className={S.summaryLabel}>Balance</p>
-          <p className={balance >= 0 ? S.summaryValueBalancePos : S.summaryValueBalanceNeg}>
+          <p className={ClassNames.summaryLabel}>Balance</p>
+          <p className={balance >= 0 ? ClassNames.summaryValueBalancePos : ClassNames.summaryValueBalanceNeg}>
             {formatARS(balance)}
           </p>
         </div>
 
-        <div className={S.summaryCard}>
-          <div className={S.summaryIconAmber}>
+        <div className={ClassNames.summaryCard}>
+          <div className={ClassNames.summaryIconAmber}>
             <Calendar className="w-4 h-4 text-amber-400" />
           </div>
-          <p className={S.summaryLabel}>Tasa de ahorro</p>
-          <p className={S.summaryValueAmber}>{savingsRate.toFixed(1)}%</p>
+          <p className={ClassNames.summaryLabel}>Tasa de ahorro</p>
+          <p className={ClassNames.summaryValueAmber}>{savingsRate.toFixed(1)}%</p>
         </div>
       </div>
 
       {/* Main chart */}
-      <div className={S.chartCard}>
-        <div className={S.chartHeader}>
-          <h3 className={S.chartTitle}>Ingresos vs Gastos por Mes</h3>
-          <div className={S.chartControls}>
+      <div className={ClassNames.chartCard}>
+        <div className={ClassNames.chartHeader}>
+          <h3 className={ClassNames.chartTitle}>Ingresos vs Gastos por Mes</h3>
+          <div className={ClassNames.chartControls}>
             {/* Months selector */}
             <select
               value={monthsToShow}
               onChange={(e) => setMonthsToShow(Number(e.target.value))}
-              className={S.monthsSelect}
+              className={ClassNames.monthsSelect}
             >
               <option value={3}>3 meses</option>
               <option value={6}>6 meses</option>
@@ -222,17 +222,17 @@ export default function ReportesPage() {
             </select>
 
             {/* Chart type toggle */}
-            <div className={S.chartTypeTabs}>
+            <div className={ClassNames.chartTypeTabs}>
               <button
                 onClick={() => setChartType('bar')}
-                className={chartType === 'bar' ? S.chartTypeBtnActive : S.chartTypeBtnInactive}
+                className={chartType === 'bar' ? ClassNames.chartTypeBtnActive : ClassNames.chartTypeBtnInactive}
                 title="Barras"
               >
                 <BarChart3 className="w-4 h-4" />
               </button>
               <button
                 onClick={() => setChartType('line')}
-                className={chartType === 'line' ? S.chartTypeBtnActive : S.chartTypeBtnInactive}
+                className={chartType === 'line' ? ClassNames.chartTypeBtnActive : ClassNames.chartTypeBtnInactive}
                 title="Líneas"
               >
                 <LineChart className="w-4 h-4" />
@@ -242,8 +242,8 @@ export default function ReportesPage() {
         </div>
 
         {loading ? (
-          <div className={S.chartLoading}>
-            <div className={S.spinner} />
+          <div className={ClassNames.chartLoading}>
+            <div className={ClassNames.spinner} />
           </div>
         ) : (
           <BarLineChart data={monthlyData} chartType={chartType} />
@@ -251,32 +251,32 @@ export default function ReportesPage() {
       </div>
 
       {/* Pie chart + best/worst months */}
-      <div className={S.bottomGrid}>
+      <div className={ClassNames.bottomGrid}>
         {/* Pie */}
-        <div className={S.pieCard}>
-          <div className={S.pieHeader}>
-            <div className={S.pieHeaderLeft}>
+        <div className={ClassNames.pieCard}>
+          <div className={ClassNames.pieHeader}>
+            <div className={ClassNames.pieHeaderLeft}>
               <PieChart className="w-4 h-4 text-emerald-400" />
               <h3 className="text-white font-semibold">Por categoría</h3>
             </div>
-            <div className={S.pieTabs}>
+            <div className={ClassNames.pieTabs}>
               <button
                 onClick={() => setPieCategory('gasto')}
-                className={pieCategory === 'gasto' ? S.pieBtnGastoActive : S.pieBtnInactive}
+                className={pieCategory === 'gasto' ? ClassNames.pieBtnGastoActive : ClassNames.pieBtnInactive}
               >
                 Gastos
               </button>
               <button
                 onClick={() => setPieCategory('ingreso')}
-                className={pieCategory === 'ingreso' ? S.pieBtnIngresoActive : S.pieBtnInactive}
+                className={pieCategory === 'ingreso' ? ClassNames.pieBtnIngresoActive : ClassNames.pieBtnInactive}
               >
                 Ingresos
               </button>
             </div>
           </div>
           {loading ? (
-            <div className={S.pieLoading}>
-              <div className={S.spinner} />
+            <div className={ClassNames.pieLoading}>
+              <div className={ClassNames.spinner} />
             </div>
           ) : (
             <PieChartComponent data={pieData} />
@@ -284,9 +284,9 @@ export default function ReportesPage() {
         </div>
 
         {/* Monthly summary */}
-        <div className={S.monthlyCard}>
-          <h3 className={S.monthlyTitle}>Resumen mensual</h3>
-          <div className={S.monthlyList}>
+        <div className={ClassNames.monthlyCard}>
+          <h3 className={ClassNames.monthlyTitle}>Resumen mensual</h3>
+          <div className={ClassNames.monthlyList}>
             {monthlyData.map((m) => {
               const monthBalance = m.ingresos - m.gastos
               const pct =
@@ -297,22 +297,22 @@ export default function ReportesPage() {
                   : 0
 
               return (
-                <div key={m.month} className={S.monthlyRow}>
-                  <div className={S.monthlyMeta}>
-                    <span className={S.monthlyLabel}>{m.month}</span>
-                    <span className={monthBalance >= 0 ? S.monthlyBalancePos : S.monthlyBalanceNeg}>
+                <div key={m.month} className={ClassNames.monthlyRow}>
+                  <div className={ClassNames.monthlyMeta}>
+                    <span className={ClassNames.monthlyLabel}>{m.month}</span>
+                    <span className={monthBalance >= 0 ? ClassNames.monthlyBalancePos : ClassNames.monthlyBalanceNeg}>
                       {monthBalance >= 0 ? '+' : ''}{formatARS(monthBalance)}
                     </span>
                   </div>
-                  <div className={S.monthlyBar}>
+                  <div className={ClassNames.monthlyBar}>
                     <div
-                      className={pct >= 100 ? S.monthlyFillBad : pct >= 80 ? S.monthlyFillWarn : S.monthlyFillGood}
+                      className={pct >= 100 ? ClassNames.monthlyFillBad : pct >= 80 ? ClassNames.monthlyFillWarn : ClassNames.monthlyFillGood}
                       style={{ width: `${pct}%` }}
                     />
                   </div>
-                  <div className={S.monthlySubRow}>
-                    <span className={S.monthlySubText}>{formatARS(m.gastos)} gastos</span>
-                    <span className={S.monthlySubText}>{pct}%</span>
+                  <div className={ClassNames.monthlySubRow}>
+                    <span className={ClassNames.monthlySubText}>{formatARS(m.gastos)} gastos</span>
+                    <span className={ClassNames.monthlySubText}>{pct}%</span>
                   </div>
                 </div>
               )

@@ -1,4 +1,4 @@
-export const S = {
+export const ClassNames = {
   root: "space-y-6",
   pageHeader: "flex items-start justify-between",
   pageTitle: "text-white text-2xl font-bold",

@@ -2,7 +2,7 @@
 
 import { DolarRate } from '@/lib/types'
 import { Minus } from 'lucide-react'
-import { S } from './dollarCard.styles'
+import { ClassNames } from './dollarCard.styles'
 import { useDollarCard } from './logic/useDollarCard'
 
 interface DollarCardProps {
@@ -17,41 +17,41 @@ export default function DollarCard({ title, rate, highlight, badge }: DollarCard
 
   if (!rate) {
     return (
-      <div className={S.skeleton}>
-        <div className={S.skeletonTitle} />
-        <div className={S.skeletonValue} />
-        <div className={S.skeletonSub} />
+      <div className={ClassNames.skeleton}>
+        <div className={ClassNames.skeletonTitle} />
+        <div className={ClassNames.skeletonValue} />
+        <div className={ClassNames.skeletonSub} />
       </div>
     )
   }
 
   return (
-    <div className={`${S.cardBase} ${highlight ? S.cardHighlight : S.cardDefault}`}>
-      {badge && <span className={S.badge}>{badge}</span>}
+    <div className={`${ClassNames.cardBase} ${highlight ? ClassNames.cardHighlight : ClassNames.cardDefault}`}>
+      {badge && <span className={ClassNames.badge}>{badge}</span>}
 
-      <h3 className={S.title}>{title}</h3>
+      <h3 className={ClassNames.title}>{title}</h3>
 
-      <div className={S.rows}>
-        <div className={S.row}>
-          <span className={S.label}>Compra</span>
-          <span className={S.valueDefault}>{formatPrice(rate.compra)}</span>
+      <div className={ClassNames.rows}>
+        <div className={ClassNames.row}>
+          <span className={ClassNames.label}>Compra</span>
+          <span className={ClassNames.valueDefault}>{formatPrice(rate.compra)}</span>
         </div>
-        <div className={S.row}>
-          <span className={S.label}>Venta</span>
-          <span className={highlight ? S.valueHighlight : S.valueNormal}>
+        <div className={ClassNames.row}>
+          <span className={ClassNames.label}>Venta</span>
+          <span className={highlight ? ClassNames.valueHighlight : ClassNames.valueNormal}>
             {formatPrice(rate.venta)}
           </span>
         </div>
-        <div className={S.divider}>
-          <span className={S.label}>Spread</span>
-          <div className={S.spread}>
+        <div className={ClassNames.divider}>
+          <span className={ClassNames.label}>Spread</span>
+          <div className={ClassNames.spread}>
             <Minus className="w-3 h-3" />
             <span>{formatPrice(spread)} ({spreadPct}%)</span>
           </div>
         </div>
       </div>
 
-      {updatedAt && <p className={S.updatedAt}>Act: {updatedAt}</p>}
+      {updatedAt && <p className={ClassNames.updatedAt}>Act: {updatedAt}</p>}
     </div>
   )
 }

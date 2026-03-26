@@ -1,4 +1,4 @@
-export const S = {
+export const ClassNames = {
   root: "space-y-6",
   welcomeTitle: "text-white text-2xl font-bold capitalize",
   welcomeSub: "text-gray-400 text-sm mt-1",

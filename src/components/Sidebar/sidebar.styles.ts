@@ -1,4 +1,4 @@
-export const S = {
+export const ClassNames = {
   inner: "flex flex-col h-full",
   logoWrap: "flex items-center gap-3 px-6 py-6 border-b border-gray-700",
   logoIcon: "w-9 h-9 rounded-xl bg-emerald-500 flex items-center justify-center shadow-lg shadow-emerald-500/30",

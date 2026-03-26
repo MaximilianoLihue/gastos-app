@@ -6,7 +6,7 @@ import { RecurringTransaction, Category } from '@/lib/types'
 import { Plus, Pencil, Trash2, RefreshCw, CheckCircle, X, ToggleLeft, ToggleRight, Calendar } from 'lucide-react'
 import { format, parseISO, isBefore, startOfMonth } from 'date-fns'
 import { es } from 'date-fns/locale'
-import { S } from './page.styles'
+import { ClassNames } from './page.styles'
 
 function formatARS(value: number): string {
   return new Intl.NumberFormat('es-AR', {
@@ -148,16 +148,16 @@ export default function RecurrentesPage() {
   const filteredCategories = categories.filter(c => c.type === form.type)
 
   return (
-    <div className={S.root}>
+    <div className={ClassNames.root}>
       {/* Header */}
-      <div className={S.pageHeader}>
+      <div className={ClassNames.pageHeader}>
         <div>
-          <h1 className={S.pageTitle}>Recurrentes</h1>
-          <p className={S.pageSub}>Ingresos y gastos que se repiten cada mes</p>
+          <h1 className={ClassNames.pageTitle}>Recurrentes</h1>
+          <p className={ClassNames.pageSub}>Ingresos y gastos que se repiten cada mes</p>
         </div>
         <button
           onClick={openCreate}
-          className={S.newBtn}
+          className={ClassNames.newBtn}
         >
           <Plus className="w-4 h-4" />
           Nuevo
@@ -165,47 +165,47 @@ export default function RecurrentesPage() {
       </div>
 
       {/* Info banner */}
-      <div className={S.infoBanner}>
+      <div className={ClassNames.infoBanner}>
         <p>Los recurrentes activos se registran automáticamente el día configurado de cada mes cuando ingresás a la app.</p>
       </div>
 
       {loading ? (
-        <div className={S.skeletonList}>
-          {[1, 2, 3].map(i => <div key={i} className={S.skeletonCard} />)}
+        <div className={ClassNames.skeletonList}>
+          {[1, 2, 3].map(i => <div key={i} className={ClassNames.skeletonCard} />)}
         </div>
       ) : items.length === 0 ? (
-        <div className={S.emptyWrap}>
+        <div className={ClassNames.emptyWrap}>
           <RefreshCw className="w-12 h-12 mx-auto mb-3 opacity-30" />
           <p>No hay transacciones recurrentes todavía</p>
-          <button onClick={openCreate} className={S.emptyCreateLink}>
+          <button onClick={openCreate} className={ClassNames.emptyCreateLink}>
             Crear la primera
           </button>
         </div>
       ) : (
-        <div className={S.listOuter}>
+        <div className={ClassNames.listOuter}>
           {[{ label: 'Ingresos', list: ingresos }, { label: 'Gastos', list: gastos }].map(({ label, list }) =>
             list.length > 0 ? (
               <div key={label}>
-                <h2 className={S.sectionTitle}>{label}</h2>
-                <div className={S.sectionList}>
+                <h2 className={ClassNames.sectionTitle}>{label}</h2>
+                <div className={ClassNames.sectionList}>
                   {list.map(item => (
                     <div
                       key={item.id}
-                      className={item.active ? S.itemActive : S.itemInactive}
+                      className={item.active ? ClassNames.itemActive : ClassNames.itemInactive}
                     >
                       {/* Color dot */}
                       <div
-                        className={S.itemDot}
+                        className={ClassNames.itemDot}
                         style={{ backgroundColor: item.category?.color ?? (item.type === 'ingreso' ? '#10b981' : '#ef4444') }}
                       />
 
                       {/* Info */}
-                      <div className={S.itemInfo}>
-                        <p className={S.itemName}>{item.description}</p>
-                        <p className={S.itemMeta}>
+                      <div className={ClassNames.itemInfo}>
+                        <p className={ClassNames.itemName}>{item.description}</p>
+                        <p className={ClassNames.itemMeta}>
                           {item.category?.name ?? 'Sin categoría'} · Día {item.day_of_month} de cada mes
                           {item.end_date && (
-                            <span className={isBefore(parseISO(item.end_date), new Date()) ? S.itemEndDateExpired : S.itemEndDateFuture}>
+                            <span className={isBefore(parseISO(item.end_date), new Date()) ? ClassNames.itemEndDateExpired : ClassNames.itemEndDateFuture}>
                               · hasta {format(parseISO(item.end_date), 'MMM yyyy', { locale: es })}
                             </span>
                           )}
@@ -213,22 +213,22 @@ export default function RecurrentesPage() {
                       </div>
 
                       {/* Amount */}
-                      <span className={item.type === 'ingreso' ? S.itemAmountIngreso : S.itemAmountGasto}>
+                      <span className={item.type === 'ingreso' ? ClassNames.itemAmountIngreso : ClassNames.itemAmountGasto}>
                         {item.type === 'ingreso' ? '+' : '-'}{formatARS(Number(item.amount))}
                       </span>
 
                       {/* Actions */}
-                      <div className={S.itemActions}>
+                      <div className={ClassNames.itemActions}>
                         <button
                           onClick={() => handleRunNow(item)}
-                          className={S.runNowBtn}
+                          className={ClassNames.runNowBtn}
                           title="Registrar hoy"
                         >
                           <CheckCircle className="w-4 h-4" />
                         </button>
                         <button
                           onClick={() => handleToggle(item)}
-                          className={S.toggleBtn}
+                          className={ClassNames.toggleBtn}
                           title={item.active ? 'Desactivar' : 'Activar'}
                         >
                           {item.active
@@ -237,24 +237,24 @@ export default function RecurrentesPage() {
                         </button>
                         <button
                           onClick={() => openEdit(item)}
-                          className={S.editBtn}
+                          className={ClassNames.editBtn}
                           title="Editar"
                         >
                           <Pencil className="w-3.5 h-3.5" />
                         </button>
                         {deleteConfirm === item.id ? (
-                          <div className={S.deleteConfirmWrap}>
-                            <button onClick={() => handleDelete(item.id)} className={S.deleteConfirmYes}>
+                          <div className={ClassNames.deleteConfirmWrap}>
+                            <button onClick={() => handleDelete(item.id)} className={ClassNames.deleteConfirmYes}>
                               Confirmar
                             </button>
-                            <button onClick={() => setDeleteConfirm(null)} className={S.deleteConfirmNo}>
+                            <button onClick={() => setDeleteConfirm(null)} className={ClassNames.deleteConfirmNo}>
                               No
                             </button>
                           </div>
                         ) : (
                           <button
                             onClick={() => setDeleteConfirm(item.id)}
-                            className={S.deleteBtn}
+                            className={ClassNames.deleteBtn}
                             title="Eliminar"
                           >
                             <Trash2 className="w-3.5 h-3.5" />
@@ -272,28 +272,28 @@ export default function RecurrentesPage() {
 
       {/* Form modal */}
       {showForm && (
-        <div className={S.modalOverlay}>
-          <div className={S.modalBox}>
-            <div className={S.modalHeader}>
-              <h3 className={S.modalTitle}>
+        <div className={ClassNames.modalOverlay}>
+          <div className={ClassNames.modalBox}>
+            <div className={ClassNames.modalHeader}>
+              <h3 className={ClassNames.modalTitle}>
                 {editItem ? 'Editar recurrente' : 'Nuevo recurrente'}
               </h3>
-              <button onClick={() => setShowForm(false)} className={S.modalCloseBtn}>
+              <button onClick={() => setShowForm(false)} className={ClassNames.modalCloseBtn}>
                 <X className="w-5 h-5" />
               </button>
             </div>
 
-            <div className={S.modalFields}>
+            <div className={ClassNames.modalFields}>
               {/* Type toggle */}
-              <div className={S.typeToggleWrap}>
+              <div className={ClassNames.typeToggleWrap}>
                 {(['ingreso', 'gasto'] as const).map(t => (
                   <button
                     key={t}
                     onClick={() => setForm(f => ({ ...f, type: t, category_id: '' }))}
                     className={
                       form.type === t
-                        ? t === 'ingreso' ? S.typeToggleIngresoActive : S.typeToggleGastoActive
-                        : S.typeToggleInactive
+                        ? t === 'ingreso' ? ClassNames.typeToggleIngresoActive : ClassNames.typeToggleGastoActive
+                        : ClassNames.typeToggleInactive
                     }
                   >
                     {t === 'ingreso' ? 'Ingreso' : 'Gasto'}
@@ -303,35 +303,35 @@ export default function RecurrentesPage() {
 
               {/* Description */}
               <div>
-                <label className={S.fieldLabel}>Descripción</label>
+                <label className={ClassNames.fieldLabel}>Descripción</label>
                 <input
                   type="text"
                   placeholder="Ej: Sueldo, Alquiler..."
                   value={form.description}
                   onChange={e => setForm(f => ({ ...f, description: e.target.value }))}
-                  className={S.input}
+                  className={ClassNames.input}
                 />
               </div>
 
               {/* Amount */}
               <div>
-                <label className={S.fieldLabel}>Monto (ARS)</label>
+                <label className={ClassNames.fieldLabel}>Monto (ARS)</label>
                 <input
                   type="number"
                   placeholder="0"
                   value={form.amount}
                   onChange={e => setForm(f => ({ ...f, amount: e.target.value }))}
-                  className={S.input}
+                  className={ClassNames.input}
                 />
               </div>
 
               {/* Day of month */}
               <div>
-                <label className={S.fieldLabel}>Día del mes</label>
+                <label className={ClassNames.fieldLabel}>Día del mes</label>
                 <select
                   value={form.day_of_month}
                   onChange={e => setForm(f => ({ ...f, day_of_month: Number(e.target.value) }))}
-                  className={S.select}
+                  className={ClassNames.select}
                 >
                   {DAYS.map(d => (
                     <option key={d} value={d}>Día {d}</option>
@@ -341,11 +341,11 @@ export default function RecurrentesPage() {
 
               {/* Category */}
               <div>
-                <label className={S.fieldLabel}>Categoría (opcional)</label>
+                <label className={ClassNames.fieldLabel}>Categoría (opcional)</label>
                 <select
                   value={form.category_id}
                   onChange={e => setForm(f => ({ ...f, category_id: e.target.value }))}
-                  className={S.select}
+                  className={ClassNames.select}
                 >
                   <option value="">Sin categoría</option>
                   {filteredCategories.map(c => (
@@ -356,7 +356,7 @@ export default function RecurrentesPage() {
 
               {/* End date */}
               <div>
-                <label className={S.endDateLabel}>
+                <label className={ClassNames.endDateLabel}>
                   <Calendar className="w-3.5 h-3.5" />
                   Hasta mes (opcional)
                 </label>
@@ -364,12 +364,12 @@ export default function RecurrentesPage() {
                   type="month"
                   value={form.end_date}
                   onChange={e => setForm(f => ({ ...f, end_date: e.target.value }))}
-                  className={S.input}
+                  className={ClassNames.input}
                 />
                 {form.end_date && (
                   <button
                     onClick={() => setForm(f => ({ ...f, end_date: '' }))}
-                    className={S.clearEndDateBtn}
+                    className={ClassNames.clearEndDateBtn}
                   >
                     Quitar fecha de fin
                   </button>
@@ -377,17 +377,17 @@ export default function RecurrentesPage() {
               </div>
             </div>
 
-            <div className={S.modalActions}>
+            <div className={ClassNames.modalActions}>
               <button
                 onClick={() => setShowForm(false)}
-                className={S.cancelBtn}
+                className={ClassNames.cancelBtn}
               >
                 Cancelar
               </button>
               <button
                 onClick={handleSave}
                 disabled={saving || !form.description.trim() || !form.amount}
-                className={S.saveBtn}
+                className={ClassNames.saveBtn}
               >
                 {saving ? 'Guardando...' : editItem ? 'Actualizar' : 'Crear'}
               </button>
@@ -398,7 +398,7 @@ export default function RecurrentesPage() {
 
       {/* Toast */}
       {toast && (
-        <div className={toast.ok ? S.toastOk : S.toastErr}>
+        <div className={toast.ok ? ClassNames.toastOk : ClassNames.toastErr}>
           <CheckCircle className="w-4 h-4" />
           {toast.msg}
         </div>
