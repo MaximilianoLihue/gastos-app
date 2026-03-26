@@ -1,0 +1,17 @@
+export const S = {
+  root: "h-16 bg-gray-800/50 border-b border-gray-700/50 backdrop-blur-sm flex items-center justify-between px-6",
+  leftWrap: "lg:ml-0 ml-10",
+  title: "text-white font-semibold text-lg",
+  subtitle: "text-gray-400 text-xs hidden sm:block",
+  rightWrap: "flex items-center gap-3",
+  bellBtn: "p-2 rounded-lg text-gray-400 hover:text-white hover:bg-gray-700/50 transition-colors",
+  avatarWrap: "relative",
+  avatarBase: "w-8 h-8 rounded-full bg-emerald-500/20 border flex items-center justify-center transition-all duration-150 active:scale-90",
+  avatarOpen: "border-emerald-400 ring-2 ring-emerald-500/40 ring-offset-1 ring-offset-gray-900 bg-emerald-500/30",
+  avatarClosed: "border-emerald-500/30 hover:bg-emerald-500/30 hover:border-emerald-400",
+  initials: "text-emerald-400 text-xs font-bold",
+  dropdown: "absolute right-0 mt-2 w-52 bg-gray-800 border border-gray-700 rounded-xl shadow-xl z-50 overflow-hidden",
+  dropdownEmail: "px-4 py-3 border-b border-gray-700",
+  dropdownEmailText: "text-white text-xs font-medium truncate",
+  dropdownLogout: "w-full flex items-center gap-3 px-4 py-3 text-red-400 hover:bg-red-500/10 transition-colors text-sm",
+}

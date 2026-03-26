@@ -1,0 +1,171 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1100 860" font-family="ui-monospace, monospace">
+  <rect width="1100" height="860" fill="#0f172a"/>
+
+  <!-- Title -->
+  <text x="550" y="38" text-anchor="middle" fill="#f8fafc" font-size="20" font-weight="bold">GastosApp — Arquitectura de Componentes</text>
+
+  <!-- ── BROWSER LAYER ── -->
+  <rect x="20" y="60" width="1060" height="72" rx="10" fill="#1e293b" stroke="#334155" stroke-width="1.5"/>
+  <text x="34" y="80" fill="#94a3b8" font-size="11" font-weight="bold">CLIENTE  /  BROWSER</text>
+  <rect x="60"  y="88" width="130" height="32" rx="6" fill="#0f172a" stroke="#475569"/>
+  <text x="125" y="109" text-anchor="middle" fill="#e2e8f0" font-size="12">/login</text>
+  <rect x="210" y="88" width="130" height="32" rx="6" fill="#0f172a" stroke="#475569"/>
+  <text x="275" y="109" text-anchor="middle" fill="#e2e8f0" font-size="12">/register</text>
+  <rect x="360" y="88" width="180" height="32" rx="6" fill="#0f172a" stroke="#475569"/>
+  <text x="450" y="109" text-anchor="middle" fill="#e2e8f0" font-size="12">ServiceWorkerRegister</text>
+  <rect x="560" y="88" width="160" height="32" rx="6" fill="#0f172a" stroke="#7c3aed" stroke-width="1.5"/>
+  <text x="640" y="109" text-anchor="middle" fill="#a78bfa" font-size="12">PWA  /share-target</text>
+  <rect x="740" y="88" width="150" height="32" rx="6" fill="#0f172a" stroke="#7c3aed" stroke-width="1.5"/>
+  <text x="815" y="109" text-anchor="middle" fill="#a78bfa" font-size="12">sw.js  (Service Worker)</text>
+  <rect x="910" y="88" width="150" height="32" rx="6" fill="#0f172a" stroke="#7c3aed" stroke-width="1.5"/>
+  <text x="985" y="109" text-anchor="middle" fill="#a78bfa" font-size="12">manifest.json</text>
+
+  <!-- ── MIDDLEWARE ── -->
+  <rect x="20" y="152" width="1060" height="52" rx="10" fill="#1c1917" stroke="#f97316" stroke-width="1.5"/>
+  <text x="34" y="170" fill="#fb923c" font-size="11" font-weight="bold">MIDDLEWARE</text>
+  <text x="550" y="183" text-anchor="middle" fill="#fed7aa" font-size="13">proxy.ts  →  updateSession()  →  Supabase auth check  →  redirect /login si no hay sesión</text>
+
+  <!-- ── APP LAYOUT ── -->
+  <rect x="20" y="224" width="1060" height="62" rx="10" fill="#1e1b4b" stroke="#818cf8" stroke-width="1.5"/>
+  <text x="34" y="243" fill="#a5b4fc" font-size="11" font-weight="bold">(app) LAYOUT  —  rutas protegidas</text>
+  <rect x="60"  y="250" width="120" height="28" rx="5" fill="#0f172a" stroke="#6366f1"/>
+  <text x="120" y="269" text-anchor="middle" fill="#e2e8f0" font-size="12">Sidebar</text>
+  <rect x="200" y="250" width="120" height="28" rx="5" fill="#0f172a" stroke="#6366f1"/>
+  <text x="260" y="269" text-anchor="middle" fill="#e2e8f0" font-size="12">Header</text>
+  <rect x="340" y="250" width="160" height="28" rx="5" fill="#0f172a" stroke="#6366f1"/>
+  <text x="420" y="269" text-anchor="middle" fill="#e2e8f0" font-size="12">RecurringTrigger</text>
+
+  <!-- ── PAGES ── -->
+  <rect x="20" y="306" width="1060" height="72" rx="10" fill="#1e293b" stroke="#334155" stroke-width="1.5"/>
+  <text x="34" y="325" fill="#94a3b8" font-size="11" font-weight="bold">PÁGINAS</text>
+  <rect x="50"  y="332" width="128" height="34" rx="6" fill="#0f172a" stroke="#10b981" stroke-width="1.5"/>
+  <text x="114" y="354" text-anchor="middle" fill="#6ee7b7" font-size="12">Dashboard</text>
+  <rect x="192" y="332" width="138" height="34" rx="6" fill="#0f172a" stroke="#10b981" stroke-width="1.5"/>
+  <text x="261" y="354" text-anchor="middle" fill="#6ee7b7" font-size="12">Transacciones</text>
+  <rect x="344" y="332" width="128" height="34" rx="6" fill="#0f172a" stroke="#10b981" stroke-width="1.5"/>
+  <text x="408" y="354" text-anchor="middle" fill="#6ee7b7" font-size="12">Categorías</text>
+  <rect x="486" y="332" width="108" height="34" rx="6" fill="#0f172a" stroke="#10b981" stroke-width="1.5"/>
+  <text x="540" y="354" text-anchor="middle" fill="#6ee7b7" font-size="12">Metas</text>
+  <rect x="608" y="332" width="128" height="34" rx="6" fill="#0f172a" stroke="#10b981" stroke-width="1.5"/>
+  <text x="672" y="354" text-anchor="middle" fill="#6ee7b7" font-size="12">Recurrentes</text>
+  <rect x="750" y="332" width="118" height="34" rx="6" fill="#0f172a" stroke="#10b981" stroke-width="1.5"/>
+  <text x="809" y="354" text-anchor="middle" fill="#6ee7b7" font-size="12">Reportes</text>
+  <rect x="882" y="332" width="108" height="34" rx="6" fill="#0f172a" stroke="#10b981" stroke-width="1.5"/>
+  <text x="936" y="354" text-anchor="middle" fill="#6ee7b7" font-size="12">Dólar</text>
+
+  <!-- ── COMPONENTS ── -->
+  <rect x="20" y="398" width="1060" height="72" rx="10" fill="#1e293b" stroke="#334155" stroke-width="1.5"/>
+  <text x="34" y="417" fill="#94a3b8" font-size="11" font-weight="bold">COMPONENTES</text>
+  <rect x="50"  y="424" width="170" height="34" rx="6" fill="#0f172a" stroke="#f59e0b"/>
+  <text x="135" y="446" text-anchor="middle" fill="#fcd34d" font-size="12">TransactionForm</text>
+  <rect x="234" y="424" width="150" height="34" rx="6" fill="#0f172a" stroke="#f59e0b"/>
+  <text x="309" y="446" text-anchor="middle" fill="#fcd34d" font-size="12">CategoryForm</text>
+  <rect x="398" y="424" width="130" height="34" rx="6" fill="#0f172a" stroke="#f59e0b"/>
+  <text x="463" y="446" text-anchor="middle" fill="#fcd34d" font-size="12">DollarCard</text>
+  <rect x="542" y="424" width="140" height="34" rx="6" fill="#0f172a" stroke="#f59e0b"/>
+  <text x="612" y="446" text-anchor="middle" fill="#fcd34d" font-size="12">ExpenseChart</text>
+
+  <!-- ── API ROUTES ── -->
+  <rect x="20" y="490" width="1060" height="72" rx="10" fill="#1e293b" stroke="#334155" stroke-width="1.5"/>
+  <text x="34" y="508" fill="#94a3b8" font-size="11" font-weight="bold">API ROUTES</text>
+  <rect x="50"  y="516" width="190" height="34" rx="6" fill="#0f172a" stroke="#ec4899"/>
+  <text x="145" y="538" text-anchor="middle" fill="#f9a8d4" font-size="12">POST /api/auth/login</text>
+  <rect x="256" y="516" width="190" height="34" rx="6" fill="#0f172a" stroke="#ec4899"/>
+  <text x="351" y="538" text-anchor="middle" fill="#f9a8d4" font-size="12">POST /api/parse-pdf</text>
+  <rect x="460" y="516" width="210" height="34" rx="6" fill="#0f172a" stroke="#ec4899"/>
+  <text x="565" y="538" text-anchor="middle" fill="#f9a8d4" font-size="12">POST /api/parse-receipt (OCR)</text>
+
+  <!-- ── LIB / UTILS ── -->
+  <rect x="20" y="582" width="1060" height="72" rx="10" fill="#1e293b" stroke="#334155" stroke-width="1.5"/>
+  <text x="34" y="600" fill="#94a3b8" font-size="11" font-weight="bold">LIB  /  UTILS</text>
+  <rect x="50"  y="606" width="110" height="34" rx="6" fill="#0f172a" stroke="#64748b"/>
+  <text x="105" y="628" text-anchor="middle" fill="#cbd5e1" font-size="11">supabase/client</text>
+  <rect x="174" y="606" width="110" height="34" rx="6" fill="#0f172a" stroke="#64748b"/>
+  <text x="229" y="628" text-anchor="middle" fill="#cbd5e1" font-size="11">supabase/server</text>
+  <rect x="298" y="606" width="100" height="34" rx="6" fill="#0f172a" stroke="#64748b"/>
+  <text x="348" y="628" text-anchor="middle" fill="#cbd5e1" font-size="11">types.ts</text>
+  <rect x="412" y="606" width="100" height="34" rx="6" fill="#0f172a" stroke="#64748b"/>
+  <text x="462" y="628" text-anchor="middle" fill="#cbd5e1" font-size="11">export.ts</text>
+  <rect x="526" y="606" width="100" height="34" rx="6" fill="#0f172a" stroke="#64748b"/>
+  <text x="576" y="628" text-anchor="middle" fill="#cbd5e1" font-size="11">parsePDF.ts</text>
+  <rect x="640" y="606" width="100" height="34" rx="6" fill="#0f172a" stroke="#64748b"/>
+  <text x="690" y="628" text-anchor="middle" fill="#cbd5e1" font-size="11">dolar.ts</text>
+  <rect x="754" y="606" width="110" height="34" rx="6" fill="#0f172a" stroke="#64748b"/>
+  <text x="809" y="628" text-anchor="middle" fill="#cbd5e1" font-size="11">recurring.ts</text>
+  <rect x="878" y="606" width="130" height="34" rx="6" fill="#0f172a" stroke="#64748b"/>
+  <text x="943" y="628" text-anchor="middle" fill="#cbd5e1" font-size="11">autoCategorize.ts</text>
+
+  <!-- ── EXTERNAL ── -->
+  <rect x="20" y="674" width="510" height="80" rx="10" fill="#1e293b" stroke="#06b6d4" stroke-width="2"/>
+  <text x="34" y="693" fill="#67e8f9" font-size="11" font-weight="bold">SUPABASE</text>
+  <rect x="50"  y="700" width="120" height="34" rx="6" fill="#0f172a" stroke="#0891b2"/>
+  <text x="110" y="722" text-anchor="middle" fill="#a5f3fc" font-size="12">Auth</text>
+  <rect x="186" y="700" width="120" height="34" rx="6" fill="#0f172a" stroke="#0891b2"/>
+  <text x="246" y="722" text-anchor="middle" fill="#a5f3fc" font-size="12">Postgres DB</text>
+  <rect x="322" y="700" width="138" height="34" rx="6" fill="#0f172a" stroke="#0891b2"/>
+  <text x="391" y="722" text-anchor="middle" fill="#a5f3fc" font-size="12">Realtime</text>
+
+  <rect x="550" y="674" width="310" height="80" rx="10" fill="#1e293b" stroke="#06b6d4" stroke-width="2"/>
+  <text x="564" y="693" fill="#67e8f9" font-size="11" font-weight="bold">EXTERNAL APIs</text>
+  <rect x="580" y="700" width="160" height="34" rx="6" fill="#0f172a" stroke="#0891b2"/>
+  <text x="660" y="722" text-anchor="middle" fill="#a5f3fc" font-size="12">dolarapi.com</text>
+  <rect x="756" y="700" width="86" height="34" rx="6" fill="#0f172a" stroke="#0891b2"/>
+  <text x="799" y="722" text-anchor="middle" fill="#a5f3fc" font-size="12">Tesseract</text>
+
+  <!-- DB Tables -->
+  <rect x="870" y="674" width="210" height="80" rx="10" fill="#1e293b" stroke="#334155"/>
+  <text x="884" y="693" fill="#94a3b8" font-size="11" font-weight="bold">DB TABLES</text>
+  <text x="884" y="712" fill="#64748b" font-size="11">transactions  ·  categories</text>
+  <text x="884" y="728" fill="#64748b" font-size="11">goals  ·  recurring_transactions</text>
+  <text x="884" y="744" fill="#64748b" font-size="11">auth.users  (Supabase managed)</text>
+
+  <!-- ARROWS between layers -->
+  <!-- Browser → Middleware -->
+  <line x1="550" y1="132" x2="550" y2="152" stroke="#475569" stroke-width="1.5" marker-end="url(#arr)"/>
+  <!-- Middleware → Layout -->
+  <line x1="550" y1="204" x2="550" y2="224" stroke="#475569" stroke-width="1.5" marker-end="url(#arr)"/>
+  <!-- Layout → Pages -->
+  <line x1="550" y1="286" x2="550" y2="306" stroke="#475569" stroke-width="1.5" marker-end="url(#arr)"/>
+  <!-- Pages → Components -->
+  <line x1="550" y1="378" x2="550" y2="398" stroke="#475569" stroke-width="1.5" marker-end="url(#arr)"/>
+  <!-- Pages → API -->
+  <line x1="800" y1="378" x2="800" y2="490" stroke="#475569" stroke-width="1" stroke-dasharray="4,3" marker-end="url(#arr)"/>
+  <!-- Components → Lib -->
+  <line x1="400" y1="470" x2="400" y2="582" stroke="#475569" stroke-width="1.5" marker-end="url(#arr)"/>
+  <!-- API → Lib -->
+  <line x1="700" y1="562" x2="700" y2="582" stroke="#475569" stroke-width="1.5" marker-end="url(#arr)"/>
+  <!-- Lib → Supabase -->
+  <line x1="275" y1="654" x2="275" y2="674" stroke="#06b6d4" stroke-width="1.5" marker-end="url(#arrc)"/>
+  <!-- Lib → External -->
+  <line x1="690" y1="654" x2="690" y2="674" stroke="#06b6d4" stroke-width="1.5" marker-end="url(#arrc)"/>
+  <!-- Supabase → DB Tables -->
+  <line x1="862" y1="714" x2="870" y2="714" stroke="#475569" stroke-width="1" stroke-dasharray="4,3"/>
+
+  <!-- Arrow markers -->
+  <defs>
+    <marker id="arr" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L8,3 z" fill="#475569"/>
+    </marker>
+    <marker id="arrc" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L8,3 z" fill="#06b6d4"/>
+    </marker>
+  </defs>
+
+  <!-- Legend -->
+  <rect x="20" y="774" width="1060" height="70" rx="10" fill="#0f172a" stroke="#1e293b"/>
+  <text x="34" y="793" fill="#64748b" font-size="11" font-weight="bold">LEYENDA</text>
+  <rect x="34"  y="800" width="14" height="14" rx="3" fill="#6366f1"/>
+  <text x="54"  y="812" fill="#94a3b8" font-size="11">Layout protegido</text>
+  <rect x="180" y="800" width="14" height="14" rx="3" fill="#10b981"/>
+  <text x="200" y="812" fill="#94a3b8" font-size="11">Páginas</text>
+  <rect x="290" y="800" width="14" height="14" rx="3" fill="#f59e0b"/>
+  <text x="310" y="812" fill="#94a3b8" font-size="11">Componentes UI</text>
+  <rect x="440" y="800" width="14" height="14" rx="3" fill="#ec4899"/>
+  <text x="460" y="812" fill="#94a3b8" font-size="11">API Routes</text>
+  <rect x="560" y="800" width="14" height="14" rx="3" fill="#7c3aed"/>
+  <text x="580" y="812" fill="#94a3b8" font-size="11">PWA</text>
+  <rect x="650" y="800" width="14" height="14" rx="3" fill="#06b6d4"/>
+  <text x="670" y="812" fill="#94a3b8" font-size="11">Servicios externos</text>
+  <line x1="810" y1="807" x2="840" y2="807" stroke="#475569" stroke-width="1.5" stroke-dasharray="4,3"/>
+  <text x="848" y="812" fill="#94a3b8" font-size="11">Llamada async</text>
+</svg>
