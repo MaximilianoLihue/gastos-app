@@ -1,4 +1,4 @@
-export const S = {
+export const ClassNames = {
   root: "min-h-screen bg-gray-900 flex items-center justify-center p-4",
   bgDecor: "absolute inset-0 overflow-hidden pointer-events-none",
   bgBlobTR: "absolute -top-40 -right-40 w-96 h-96 rounded-full bg-emerald-500/5 blur-3xl",

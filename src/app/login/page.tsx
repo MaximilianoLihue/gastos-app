@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { TrendingUp, Mail, Lock, Loader2, Eye, EyeOff } from 'lucide-react'
-import { S } from './page.styles'
+import { ClassNames } from './page.styles'
 
 export default function LoginPage() {
   const [email, setEmail] = useState('')
@@ -40,54 +40,54 @@ export default function LoginPage() {
   }
 
   return (
-    <div className={S.root}>
-      <div className={S.bgDecor}>
-        <div className={S.bgBlobTR} />
-        <div className={S.bgBlobBL} />
+    <div className={ClassNames.root}>
+      <div className={ClassNames.bgDecor}>
+        <div className={ClassNames.bgBlobTR} />
+        <div className={ClassNames.bgBlobBL} />
       </div>
 
-      <div className={S.content}>
-        <div className={S.logoWrap}>
-          <div className={S.logoIcon}>
+      <div className={ClassNames.content}>
+        <div className={ClassNames.logoWrap}>
+          <div className={ClassNames.logoIcon}>
             <TrendingUp className="w-7 h-7 text-white" />
           </div>
-          <h1 className={S.appName}>GastosApp</h1>
-          <p className={S.tagline}>Ingresá a tu cuenta</p>
+          <h1 className={ClassNames.appName}>GastosApp</h1>
+          <p className={ClassNames.tagline}>Ingresá a tu cuenta</p>
         </div>
 
-        <div className={S.card}>
-          <form onSubmit={handleSubmit} className={S.form}>
+        <div className={ClassNames.card}>
+          <form onSubmit={handleSubmit} className={ClassNames.form}>
             <div>
-              <label className={S.label}>Email</label>
-              <div className={S.inputWrap}>
-                <Mail className={S.inputIcon} />
+              <label className={ClassNames.label}>Email</label>
+              <div className={ClassNames.inputWrap}>
+                <Mail className={ClassNames.inputIcon} />
                 <input
                   type="email"
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="tu@email.com"
-                  className={S.input}
+                  className={ClassNames.input}
                 />
               </div>
             </div>
 
             <div>
-              <label className={S.label}>Contraseña</label>
-              <div className={S.inputWrap}>
-                <Lock className={S.inputIcon} />
+              <label className={ClassNames.label}>Contraseña</label>
+              <div className={ClassNames.inputWrap}>
+                <Lock className={ClassNames.inputIcon} />
                 <input
                   type={showPassword ? 'text' : 'password'}
                   required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
-                  className={S.inputWithToggle}
+                  className={ClassNames.inputWithToggle}
                 />
                 <button
                   type="button"
                   onPointerDown={(e) => { e.preventDefault(); setShowPassword(v => !v) }}
-                  className={S.toggleBtn}
+                  className={ClassNames.toggleBtn}
                 >
                   {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
@@ -95,15 +95,15 @@ export default function LoginPage() {
             </div>
 
             {error && (
-              <div className={S.errorWrap}>
-                <p className={S.errorText}>{error}</p>
+              <div className={ClassNames.errorWrap}>
+                <p className={ClassNames.errorText}>{error}</p>
               </div>
             )}
 
             <button
               type="submit"
               disabled={loading}
-              className={S.submitBtn}
+              className={ClassNames.submitBtn}
             >
               {loading ? (
                 <>
@@ -116,10 +116,10 @@ export default function LoginPage() {
             </button>
           </form>
 
-          <div className={S.footer}>
-            <p className={S.footerText}>
+          <div className={ClassNames.footer}>
+            <p className={ClassNames.footerText}>
               ¿No tenés cuenta?{' '}
-              <Link href="/register" className={S.footerLink}>
+              <Link href="/register" className={ClassNames.footerLink}>
                 Registrate
               </Link>
             </p>
