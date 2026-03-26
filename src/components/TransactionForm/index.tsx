@@ -4,6 +4,7 @@ import { Transaction, TransactionType } from '@/lib/types'
 import { X, Save, Loader2 } from 'lucide-react'
 import { ClassNames } from './transactionForm.styles'
 import { useTransactionForm } from './logic/useTransactionForm'
+import { useT } from '@/lib/i18n/LangContext'
 
 interface TransactionFormProps {
   transaction?: Transaction | null
@@ -11,59 +12,46 @@ interface TransactionFormProps {
   onCancel: () => void
 }
 
-export default function TransactionForm({
-  transaction,
-  onSuccess,
-  onCancel,
-}: TransactionFormProps) {
+export default function TransactionForm({ transaction, onSuccess, onCancel }: TransactionFormProps) {
+  const t = useT()
   const { loading, categories, error, form, setForm, handleTypeChange, handleSubmit } =
     useTransactionForm({ transaction, onSuccess })
 
   return (
     <div className={ClassNames.overlay}>
       <div className={ClassNames.modal}>
-        {/* Header */}
         <div className={ClassNames.header}>
           <h3 className={ClassNames.headerTitle}>
-            {transaction ? 'Editar transacción' : 'Nueva transacción'}
+            {transaction ? t.transactionForm.titleEdit : t.transactionForm.titleNew}
           </h3>
-          <button
-            onClick={onCancel}
-            className={ClassNames.closeBtn}
-          >
+          <button onClick={onCancel} className={ClassNames.closeBtn}>
             <X className="w-5 h-5" />
           </button>
         </div>
 
         <form onSubmit={handleSubmit} className={ClassNames.form}>
-          {/* Type selector */}
           <div>
-            <label className={ClassNames.label}>
-              Tipo
-            </label>
+            <label className={ClassNames.label}>{t.common.type}</label>
             <div className={ClassNames.typeGrid}>
-              {(['ingreso', 'gasto'] as TransactionType[]).map((t) => (
+              {(['ingreso', 'gasto'] as TransactionType[]).map((tp) => (
                 <button
-                  key={t}
+                  key={tp}
                   type="button"
-                  onClick={() => handleTypeChange(t)}
+                  onClick={() => handleTypeChange(tp)}
                   className={`${ClassNames.typeBtnBase} ${
-                    form.type === t
-                      ? t === 'ingreso'
-                        ? ClassNames.typeBtnIngreso
-                        : ClassNames.typeBtnGasto
+                    form.type === tp
+                      ? tp === 'ingreso' ? ClassNames.typeBtnIngreso : ClassNames.typeBtnGasto
                       : ClassNames.typeBtnInactive
                   }`}
                 >
-                  {t === 'ingreso' ? 'Ingreso' : 'Gasto'}
+                  {tp === 'ingreso' ? t.common.income : t.common.expense}
                 </button>
               ))}
             </div>
           </div>
 
-          {/* Amount */}
           <div>
-            <label className={ClassNames.label}>Monto</label>
+            <label className={ClassNames.label}>{t.common.amount}</label>
             <div className={ClassNames.amountRow}>
               <div className={ClassNames.currencyToggle}>
                 {(['ARS', 'USD'] as const).map((cur) => (
@@ -80,18 +68,14 @@ export default function TransactionForm({
                 ))}
               </div>
               <div className={ClassNames.amountWrap}>
-                <span className={ClassNames.amountPrefix}>
-                  {form.currency === 'USD' ? 'U$S' : '$'}
-                </span>
+                <span className={ClassNames.amountPrefix}>{form.currency === 'USD' ? 'U$S' : '$'}</span>
                 <input
                   type="number"
                   step="0.01"
                   min="0.01"
                   required
                   value={form.amount}
-                  onChange={(e) =>
-                    setForm((prev) => ({ ...prev, amount: e.target.value }))
-                  }
+                  onChange={(e) => setForm((prev) => ({ ...prev, amount: e.target.value }))}
                   placeholder="0.00"
                   className={ClassNames.amountInput}
                 />
@@ -99,85 +83,51 @@ export default function TransactionForm({
             </div>
           </div>
 
-          {/* Description */}
           <div>
-            <label className={ClassNames.label}>
-              Descripción
-            </label>
+            <label className={ClassNames.label}>{t.common.description}</label>
             <input
               type="text"
               value={form.description}
-              onChange={(e) =>
-                setForm((prev) => ({ ...prev, description: e.target.value }))
-              }
-              placeholder="Descripción opcional..."
+              onChange={(e) => setForm((prev) => ({ ...prev, description: e.target.value }))}
+              placeholder={t.transactionForm.descriptionPlaceholder}
               className={ClassNames.input}
             />
           </div>
 
-          {/* Date */}
           <div>
-            <label className={ClassNames.label}>
-              Fecha
-            </label>
+            <label className={ClassNames.label}>{t.common.date}</label>
             <input
               type="date"
               required
               value={form.date}
-              onChange={(e) =>
-                setForm((prev) => ({ ...prev, date: e.target.value }))
-              }
+              onChange={(e) => setForm((prev) => ({ ...prev, date: e.target.value }))}
               className={ClassNames.dateInput}
             />
           </div>
 
-          {/* Category */}
           <div>
-            <label className={ClassNames.label}>
-              Categoría
-            </label>
+            <label className={ClassNames.label}>{t.common.category}</label>
             <select
               value={form.category_id}
-              onChange={(e) =>
-                setForm((prev) => ({ ...prev, category_id: e.target.value }))
-              }
+              onChange={(e) => setForm((prev) => ({ ...prev, category_id: e.target.value }))}
               className={ClassNames.select}
             >
-              <option value="">Sin categoría</option>
+              <option value="">{t.common.noCategory}</option>
               {categories.map((cat) => (
-                <option key={cat.id} value={cat.id}>
-                  {cat.name}
-                </option>
+                <option key={cat.id} value={cat.id}>{cat.name}</option>
               ))}
             </select>
           </div>
 
-          {error && (
-            <p className={ClassNames.error}>
-              {error}
-            </p>
-          )}
+          {error && <p className={ClassNames.error}>{error}</p>}
 
-          {/* Actions */}
           <div className={ClassNames.actions}>
-            <button
-              type="button"
-              onClick={onCancel}
-              className={ClassNames.cancelBtn}
-            >
-              Cancelar
+            <button type="button" onClick={onCancel} className={ClassNames.cancelBtn}>
+              {t.common.cancel}
             </button>
-            <button
-              type="submit"
-              disabled={loading}
-              className={ClassNames.submitBtn}
-            >
-              {loading ? (
-                <Loader2 className="w-4 h-4 animate-spin" />
-              ) : (
-                <Save className="w-4 h-4" />
-              )}
-              {loading ? 'Guardando...' : 'Guardar'}
+            <button type="submit" disabled={loading} className={ClassNames.submitBtn}>
+              {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+              {loading ? t.common.saving : t.common.save}
             </button>
           </div>
         </form>

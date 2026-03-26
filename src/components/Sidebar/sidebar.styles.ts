@@ -22,4 +22,8 @@ export const ClassNames = {
   mobileSidebarClosed: "lg:hidden fixed inset-y-0 left-0 z-50 w-64 bg-gray-950 border-r border-white/5 transform transition-transform duration-300 -translate-x-full",
   mobileCloseBtn: "absolute top-4 right-4 p-1.5 rounded-lg text-gray-400 hover:text-white hover:bg-white/10",
   desktopSidebar: "hidden lg:flex flex-col fixed inset-y-0 left-0 z-30 w-64 bg-gray-950 border-r border-white/5",
+  langToggleWrap: "flex items-center gap-1.5 px-3 py-2 mb-1",
+  langBtnActive: "text-xs font-bold text-emerald-400",
+  langBtnInactive: "text-xs font-medium text-gray-500 hover:text-gray-300 transition-colors",
+  langDivider: "text-gray-700 text-xs",
 }

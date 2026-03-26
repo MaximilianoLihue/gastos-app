@@ -6,8 +6,10 @@ import { Category } from '@/lib/types'
 import CategoryForm from '@/components/CategoryForm'
 import { Plus, Pencil, Trash2, Tag } from 'lucide-react'
 import { ClassNames } from './page.styles'
+import { useT } from '@/lib/i18n/LangContext'
 
 export default function CategoriasPage() {
+  const t = useT()
   const supabase = createClient()
   const [categories, setCategories] = useState<Category[]>([])
   const [loading, setLoading] = useState(true)
@@ -55,17 +57,15 @@ export default function CategoriasPage() {
       {/* Header */}
       <div className={ClassNames.pageHeader}>
         <div>
-          <h1 className={ClassNames.pageTitle}>Categorías</h1>
-          <p className={ClassNames.pageSub}>
-            {categories.length} categoría{categories.length !== 1 ? 's' : ''} creada{categories.length !== 1 ? 's' : ''}
-          </p>
+          <h1 className={ClassNames.pageTitle}>{t.categories.title}</h1>
+          <p className={ClassNames.pageSub}>{t.categories.count(categories.length)}</p>
         </div>
         <button
           onClick={() => { setEditCat(null); setShowForm(true) }}
           className={ClassNames.newBtn}
         >
           <Plus className="w-4 h-4" />
-          Nueva categoría
+          {t.categories.newBtn}
         </button>
       </div>
 
@@ -85,7 +85,7 @@ export default function CategoriasPage() {
                 : ClassNames.filterBtnInactive
             }`}
           >
-            {type === 'all' ? 'Todas' : type === 'ingreso' ? 'Ingresos' : 'Gastos'}
+            {type === 'all' ? t.common.allF : type === 'ingreso' ? t.common.incomes : t.common.expenses}
             <span className={ClassNames.filterBtnCount}>
               {type === 'all'
                 ? categories.length
@@ -110,9 +110,7 @@ export default function CategoriasPage() {
           {(filterType === 'all' || filterType === 'ingreso') && ingresos.length > 0 && (
             <div>
               {filterType === 'all' && (
-                <h2 className={ClassNames.sectionTitleIngreso}>
-                  Ingresos
-                </h2>
+                <h2 className={ClassNames.sectionTitleIngreso}>{t.common.incomes}</h2>
               )}
               <div className={ClassNames.catGrid}>
                 {ingresos.map((cat) => (
@@ -134,9 +132,7 @@ export default function CategoriasPage() {
           {(filterType === 'all' || filterType === 'gasto') && gastos.length > 0 && (
             <div>
               {filterType === 'all' && (
-                <h2 className={ClassNames.sectionTitleGasto}>
-                  Gastos
-                </h2>
+                <h2 className={ClassNames.sectionTitleGasto}>{t.common.expenses}</h2>
               )}
               <div className={ClassNames.catGrid}>
                 {gastos.map((cat) => (
@@ -159,10 +155,8 @@ export default function CategoriasPage() {
               <div className={ClassNames.emptyIconWrap}>
                 <Tag className="w-7 h-7 text-gray-600" />
               </div>
-              <p className={ClassNames.emptyTitle}>No hay categorías</p>
-              <p className={ClassNames.emptySub}>
-                Creá tu primera categoría para empezar
-              </p>
+              <p className={ClassNames.emptyTitle}>{t.categories.noCategories}</p>
+              <p className={ClassNames.emptySub}>{t.categories.noSub}</p>
             </div>
           )}
         </>
@@ -196,6 +190,7 @@ function CategoryCard({
   onConfirmDelete,
   onCancelDelete,
 }: CategoryCardProps) {
+  const t = useT()
   return (
     <div className={ClassNames.card}>
       <div className={ClassNames.cardTop}>
@@ -215,7 +210,7 @@ function CategoryCard({
           <div>
             <p className={ClassNames.cardName}>{category.name}</p>
             <span className={category.type === 'ingreso' ? ClassNames.cardTypeIngreso : ClassNames.cardTypeGasto}>
-              {category.type === 'ingreso' ? 'Ingreso' : 'Gasto'}
+              {category.type === 'ingreso' ? t.common.income : t.common.expense}
             </span>
           </div>
         </div>
@@ -224,30 +219,24 @@ function CategoryCard({
           <button
             onClick={() => onEdit(category)}
             className={ClassNames.editBtn}
-            title="Editar"
+            title={t.common.edit}
           >
             <Pencil className="w-3.5 h-3.5" />
           </button>
           {deleteConfirm === category.id ? (
             <div className={ClassNames.deleteConfirmWrap}>
-              <button
-                onClick={() => onConfirmDelete(category.id)}
-                className={ClassNames.deleteConfirmYes}
-              >
-                Sí
+              <button onClick={() => onConfirmDelete(category.id)} className={ClassNames.deleteConfirmYes}>
+                {t.common.yes}
               </button>
-              <button
-                onClick={onCancelDelete}
-                className={ClassNames.deleteConfirmNo}
-              >
-                No
+              <button onClick={onCancelDelete} className={ClassNames.deleteConfirmNo}>
+                {t.common.no}
               </button>
             </div>
           ) : (
             <button
               onClick={() => onDelete(category.id)}
               className={ClassNames.deleteBtn}
-              title="Eliminar"
+              title={t.common.delete}
             >
               <Trash2 className="w-3.5 h-3.5" />
             </button>

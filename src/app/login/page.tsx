@@ -4,8 +4,10 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { TrendingUp, Mail, Lock, Loader2, Eye, EyeOff } from 'lucide-react'
 import { ClassNames } from './page.styles'
+import { useT } from '@/lib/i18n/LangContext'
 
 export default function LoginPage() {
+  const t = useT()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
@@ -27,13 +29,13 @@ export default function LoginPage() {
       const data = await res.json()
 
       if (!res.ok) {
-        setError(data.error || 'Error al iniciar sesión')
+        setError(data.error || t.login.errorDefault)
         return
       }
 
       window.location.href = '/dashboard'
     } catch {
-      setError('Error al iniciar sesión. Intenta de nuevo.')
+      setError(t.login.errorRetry)
     } finally {
       setLoading(false)
     }
@@ -51,14 +53,14 @@ export default function LoginPage() {
           <div className={ClassNames.logoIcon}>
             <TrendingUp className="w-7 h-7 text-white" />
           </div>
-          <h1 className={ClassNames.appName}>GastosApp</h1>
-          <p className={ClassNames.tagline}>Ingresá a tu cuenta</p>
+          <h1 className={ClassNames.appName}>{t.appName}</h1>
+          <p className={ClassNames.tagline}>{t.login.tagline}</p>
         </div>
 
         <div className={ClassNames.card}>
           <form onSubmit={handleSubmit} className={ClassNames.form}>
             <div>
-              <label className={ClassNames.label}>Email</label>
+              <label className={ClassNames.label}>{t.login.emailLabel}</label>
               <div className={ClassNames.inputWrap}>
                 <Mail className={ClassNames.inputIcon} />
                 <input
@@ -66,14 +68,14 @@ export default function LoginPage() {
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="tu@email.com"
+                  placeholder={t.login.emailPlaceholder}
                   className={ClassNames.input}
                 />
               </div>
             </div>
 
             <div>
-              <label className={ClassNames.label}>Contraseña</label>
+              <label className={ClassNames.label}>{t.login.passwordLabel}</label>
               <div className={ClassNames.inputWrap}>
                 <Lock className={ClassNames.inputIcon} />
                 <input
@@ -81,7 +83,7 @@ export default function LoginPage() {
                   required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  placeholder="••••••••"
+                  placeholder={t.login.passwordPlaceholder}
                   className={ClassNames.inputWithToggle}
                 />
                 <button
@@ -100,27 +102,23 @@ export default function LoginPage() {
               </div>
             )}
 
-            <button
-              type="submit"
-              disabled={loading}
-              className={ClassNames.submitBtn}
-            >
+            <button type="submit" disabled={loading} className={ClassNames.submitBtn}>
               {loading ? (
                 <>
                   <Loader2 className="w-4 h-4 animate-spin" />
-                  Ingresando...
+                  {t.login.submitting}
                 </>
               ) : (
-                'Ingresar'
+                t.login.submitBtn
               )}
             </button>
           </form>
 
           <div className={ClassNames.footer}>
             <p className={ClassNames.footerText}>
-              ¿No tenés cuenta?{' '}
+              {t.login.noAccount}{' '}
               <Link href="/register" className={ClassNames.footerLink}>
-                Registrate
+                {t.login.register}
               </Link>
             </p>
           </div>

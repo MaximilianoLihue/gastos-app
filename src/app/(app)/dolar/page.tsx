@@ -3,8 +3,10 @@ import { fetchAllDolarRates, calcularUSDPosibles } from '@/lib/dolar'
 import DollarCard from '@/components/DollarCard'
 import { DollarSign, RefreshCw, TrendingUp, Info } from 'lucide-react'
 import { format, startOfMonth, endOfMonth } from 'date-fns'
-import { es } from 'date-fns/locale'
+import { es, enUS } from 'date-fns/locale'
 import { ClassNames } from './page.styles'
+import { cookies } from 'next/headers'
+import { getT, LANG_COOKIE, DEFAULT_LANG, type Lang } from '@/lib/i18n/index'
 
 function formatARS(value: number): string {
   return new Intl.NumberFormat('es-AR', {
@@ -25,6 +27,11 @@ function formatUSD(value: number): string {
 
 export default async function DolarPage() {
   const supabase = await createClient()
+  const cookieStore = await cookies()
+  const lang = (cookieStore.get(LANG_COOKIE)?.value ?? DEFAULT_LANG) as Lang
+  const t = getT(lang)
+  const dateLocale = lang === 'en' ? enUS : es
+
   const now = new Date()
 
   // Fetch all dollar rates
@@ -51,31 +58,31 @@ export default async function DolarPage() {
   const ratesConfig = [
     {
       key: 'oficial' as const,
-      title: 'Dólar Oficial',
+      title: t.dollar.rateOfficial,
       badge: 'BNA',
       highlight: false,
     },
     {
       key: 'blue' as const,
-      title: 'Dólar Blue',
+      title: t.dollar.rateBlue,
       badge: undefined,
       highlight: true,
     },
     {
       key: 'mep' as const,
-      title: 'Dólar MEP',
+      title: t.dollar.rateMep,
       badge: 'Bolsa',
       highlight: false,
     },
     {
       key: 'ccl' as const,
-      title: 'Contado con Liquidación',
+      title: t.dollar.rateCcl,
       badge: 'CCL',
       highlight: false,
     },
     {
       key: 'cripto' as const,
-      title: 'Dólar Cripto',
+      title: t.dollar.rateCripto,
       badge: 'USDT',
       highlight: false,
     },
@@ -86,10 +93,10 @@ export default async function DolarPage() {
       {/* Header */}
       <div className={ClassNames.pageHeader}>
         <div>
-          <h1 className={ClassNames.pageTitle}>Cotización del Dólar</h1>
+          <h1 className={ClassNames.pageTitle}>{t.dollar.title}</h1>
           <p className={ClassNames.pageSub}>
             <RefreshCw className="w-3.5 h-3.5" />
-            Datos actualizados automáticamente vía{' '}
+            {t.dollar.autoUpdated}{' '}
             <a
               href="https://dolarapi.com"
               target="_blank"
@@ -101,9 +108,9 @@ export default async function DolarPage() {
           </p>
         </div>
         <div className={ClassNames.lastUpdatedWrap}>
-          <p className={ClassNames.lastUpdatedLabel}>Última actualización</p>
+          <p className={ClassNames.lastUpdatedLabel}>{t.dollar.lastUpdated}</p>
           <p className={ClassNames.lastUpdatedValue}>
-            {format(now, "HH:mm 'hs'", { locale: es })}
+            {format(now, "HH:mm 'hs'", { locale: dateLocale })}
           </p>
         </div>
       </div>
@@ -126,7 +133,7 @@ export default async function DolarPage() {
         <div className={ClassNames.spreadCard}>
           <h3 className={ClassNames.spreadTitle}>
             <TrendingUp className="w-4 h-4 text-emerald-400" />
-            Brecha cambiaria
+            {t.dollar.exchangeGap}
           </h3>
           <div className={ClassNames.spreadGrid}>
             {[
@@ -179,10 +186,10 @@ export default async function DolarPage() {
       <div className={ClassNames.usdCard}>
         <h3 className={ClassNames.usdTitle}>
           <DollarSign className="w-4 h-4 text-emerald-400" />
-          ¿Cuántos dólares podés comprar?
+          {t.dollar.howManyUsd}
         </h3>
         <p className={ClassNames.usdSub}>
-          Calculado con tu superávit del mes actual:{' '}
+          {t.dollar.calculatedWith}{' '}
           <span className={surplus > 0 ? ClassNames.usdSurplusPos : ClassNames.usdSurplusNeg}>
             {formatARS(surplus)}
           </span>
@@ -192,15 +199,14 @@ export default async function DolarPage() {
           <div className={ClassNames.noSurplusBox}>
             <Info className="w-4 h-4 text-amber-400 flex-shrink-0 mt-0.5" />
             <p className={ClassNames.noSurplusText}>
-              Tu superávit este mes es ${formatARS(totalIngresos - totalGastos)}. Para poder calcular cuántos
-              dólares podés comprar, tus ingresos deben superar tus gastos.
+              {t.dollar.noSurplus} {formatARS(totalIngresos - totalGastos)}{t.dollar.noSurplusSuffix}
             </p>
           </div>
         ) : (
           <div className={ClassNames.usdGrid}>
             {[
               {
-                label: 'Al dólar oficial',
+                label: t.dollar.atOfficial,
                 usd: surplus / (rates.oficial?.venta ?? 1),
                 rate: rates.oficial?.venta,
                 color: 'text-blue-400',
@@ -208,7 +214,7 @@ export default async function DolarPage() {
                 available: !!rates.oficial,
               },
               {
-                label: 'Al dólar blue',
+                label: t.dollar.atBlue,
                 usd: surplus / (rates.blue?.venta ?? 1),
                 rate: rates.blue?.venta,
                 color: 'text-emerald-400',
@@ -216,7 +222,7 @@ export default async function DolarPage() {
                 available: !!rates.blue,
               },
               {
-                label: 'Al dólar MEP',
+                label: t.dollar.atMep,
                 usd: surplus / (rates.mep?.venta ?? 1),
                 rate: rates.mep?.venta,
                 color: 'text-purple-400',
@@ -224,7 +230,7 @@ export default async function DolarPage() {
                 available: !!rates.mep,
               },
               {
-                label: 'Al dólar CCL',
+                label: t.dollar.atCcl,
                 usd: surplus / (rates.ccl?.venta ?? 1),
                 rate: rates.ccl?.venta,
                 color: 'text-amber-400',
@@ -243,7 +249,7 @@ export default async function DolarPage() {
                     {formatUSD(item.usd)}
                   </p>
                   <p className={ClassNames.usdItemSub}>
-                    Venta: {formatARS(item.rate ?? 0)}
+                    {t.dollar.sell} {formatARS(item.rate ?? 0)}
                   </p>
                 </div>
               ))}
@@ -253,8 +259,7 @@ export default async function DolarPage() {
         <div className={ClassNames.usdFootnote}>
           <Info className="w-3.5 h-3.5 flex-shrink-0 mt-0.5" />
           <p>
-            Cálculo informativo: Superávit ÷ precio de venta. Las operaciones en dólar
-            blue son informales. El cupo oficial es de USD 200 mensuales.
+            {t.dollar.footnote}
           </p>
         </div>
       </div>

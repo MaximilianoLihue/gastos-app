@@ -4,6 +4,7 @@ import { Category, TransactionType } from '@/lib/types'
 import { X, Save, Loader2 } from 'lucide-react'
 import { ClassNames } from './categoryForm.styles'
 import { useCategoryForm } from './logic/useCategoryForm'
+import { useT } from '@/lib/i18n/LangContext'
 
 interface CategoryFormProps {
   category?: Category | null
@@ -17,78 +18,57 @@ const PRESET_COLORS = [
   '#14b8a6', '#f43f5e', '#a855f7', '#0ea5e9', '#eab308',
 ]
 
-export default function CategoryForm({
-  category,
-  onSuccess,
-  onCancel,
-}: CategoryFormProps) {
-  const { loading, error, form, setForm, handleSubmit } =
-    useCategoryForm({ category, onSuccess })
+export default function CategoryForm({ category, onSuccess, onCancel }: CategoryFormProps) {
+  const t = useT()
+  const { loading, error, form, setForm, handleSubmit } = useCategoryForm({ category, onSuccess })
 
   return (
     <div className={ClassNames.overlay}>
       <div className={ClassNames.modal}>
-        {/* Header */}
         <div className={ClassNames.header}>
           <h3 className={ClassNames.headerTitle}>
-            {category ? 'Editar categoría' : 'Nueva categoría'}
+            {category ? t.categoryForm.titleEdit : t.categoryForm.titleNew}
           </h3>
-          <button
-            onClick={onCancel}
-            className={ClassNames.closeBtn}
-          >
+          <button onClick={onCancel} className={ClassNames.closeBtn}>
             <X className="w-5 h-5" />
           </button>
         </div>
 
         <form onSubmit={handleSubmit} className={ClassNames.form}>
-          {/* Name */}
           <div>
-            <label className={ClassNames.label}>
-              Nombre
-            </label>
+            <label className={ClassNames.label}>{t.common.name}</label>
             <input
               type="text"
               required
               value={form.name}
-              onChange={(e) =>
-                setForm((prev) => ({ ...prev, name: e.target.value }))
-              }
-              placeholder="Ej: Supermercado, Sueldo..."
+              onChange={(e) => setForm((prev) => ({ ...prev, name: e.target.value }))}
+              placeholder={t.categoryForm.namePlaceholder}
               className={ClassNames.input}
             />
           </div>
 
-          {/* Type */}
           <div>
-            <label className={ClassNames.label}>
-              Tipo
-            </label>
+            <label className={ClassNames.label}>{t.common.type}</label>
             <div className={ClassNames.typeGrid}>
-              {(['ingreso', 'gasto'] as TransactionType[]).map((t) => (
+              {(['ingreso', 'gasto'] as TransactionType[]).map((tp) => (
                 <button
-                  key={t}
+                  key={tp}
                   type="button"
-                  onClick={() => setForm((prev) => ({ ...prev, type: t }))}
+                  onClick={() => setForm((prev) => ({ ...prev, type: tp }))}
                   className={`${ClassNames.typeBtnBase} ${
-                    form.type === t
-                      ? t === 'ingreso'
-                        ? ClassNames.typeBtnIngreso
-                        : ClassNames.typeBtnGasto
+                    form.type === tp
+                      ? tp === 'ingreso' ? ClassNames.typeBtnIngreso : ClassNames.typeBtnGasto
                       : ClassNames.typeBtnInactive
                   }`}
                 >
-                  {t === 'ingreso' ? 'Ingreso' : 'Gasto'}
+                  {tp === 'ingreso' ? t.common.income : t.common.expense}
                 </button>
               ))}
             </div>
           </div>
 
-          {/* Color */}
           <div>
-            <label className={ClassNames.label}>
-              Color
-            </label>
+            <label className={ClassNames.label}>{t.common.color}</label>
             <div className={ClassNames.colorSwatchWrap}>
               {PRESET_COLORS.map((color) => (
                 <button
@@ -97,56 +77,32 @@ export default function CategoryForm({
                   onClick={() => setForm((prev) => ({ ...prev, color }))}
                   style={{ backgroundColor: color }}
                   className={`${ClassNames.colorSwatchBase} ${
-                    form.color === color
-                      ? ClassNames.colorSwatchActive
-                      : ClassNames.colorSwatchInactive
+                    form.color === color ? ClassNames.colorSwatchActive : ClassNames.colorSwatchInactive
                   }`}
                   aria-label={`Color ${color}`}
                 />
               ))}
             </div>
             <div className={ClassNames.colorPickerRow}>
-              <div
-                className={ClassNames.colorPreview}
-                style={{ backgroundColor: form.color }}
-              />
+              <div className={ClassNames.colorPreview} style={{ backgroundColor: form.color }} />
               <input
                 type="color"
                 value={form.color}
-                onChange={(e) =>
-                  setForm((prev) => ({ ...prev, color: e.target.value }))
-                }
+                onChange={(e) => setForm((prev) => ({ ...prev, color: e.target.value }))}
                 className={ClassNames.colorInput}
               />
             </div>
           </div>
 
-          {error && (
-            <p className={ClassNames.error}>
-              {error}
-            </p>
-          )}
+          {error && <p className={ClassNames.error}>{error}</p>}
 
-          {/* Actions */}
           <div className={ClassNames.actions}>
-            <button
-              type="button"
-              onClick={onCancel}
-              className={ClassNames.cancelBtn}
-            >
-              Cancelar
+            <button type="button" onClick={onCancel} className={ClassNames.cancelBtn}>
+              {t.common.cancel}
             </button>
-            <button
-              type="submit"
-              disabled={loading}
-              className={ClassNames.submitBtn}
-            >
-              {loading ? (
-                <Loader2 className="w-4 h-4 animate-spin" />
-              ) : (
-                <Save className="w-4 h-4" />
-              )}
-              {loading ? 'Guardando...' : 'Guardar'}
+            <button type="submit" disabled={loading} className={ClassNames.submitBtn}>
+              {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+              {loading ? t.common.saving : t.common.save}
             </button>
           </div>
         </form>

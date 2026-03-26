@@ -5,8 +5,9 @@ import { createClient } from '@/lib/supabase/client'
 import { RecurringTransaction, Category } from '@/lib/types'
 import { Plus, Pencil, Trash2, RefreshCw, CheckCircle, X, ToggleLeft, ToggleRight, Calendar } from 'lucide-react'
 import { format, parseISO, isBefore, startOfMonth } from 'date-fns'
-import { es } from 'date-fns/locale'
+import { es, enUS } from 'date-fns/locale'
 import { ClassNames } from './page.styles'
+import { useLang } from '@/lib/i18n/LangContext'
 
 function formatARS(value: number): string {
   return new Intl.NumberFormat('es-AR', {
@@ -39,6 +40,8 @@ const emptyForm: FormState = {
 
 export default function RecurrentesPage() {
   const supabase = createClient()
+  const { t, lang } = useLang()
+  const dateLocale = lang === "en" ? enUS : es
   const [items, setItems] = useState<RecurringTransaction[]>([])
   const [categories, setCategories] = useState<Category[]>([])
   const [loading, setLoading] = useState(true)
@@ -106,10 +109,10 @@ export default function RecurrentesPage() {
     }
     if (editItem) {
       await supabase.from('recurring_transactions').update(payload).eq('id', editItem.id)
-      showToast('Actualizado correctamente')
+      showToast(t.recurring.toastUpdated)
     } else {
       await supabase.from('recurring_transactions').insert(payload)
-      showToast('Creado correctamente')
+      showToast(t.recurring.toastCreated)
     }
     setSaving(false)
     setShowForm(false)
@@ -119,7 +122,7 @@ export default function RecurrentesPage() {
   async function handleDelete(id: string) {
     await supabase.from('recurring_transactions').delete().eq('id', id)
     setDeleteConfirm(null)
-    showToast('Eliminado', true)
+    showToast(t.recurring.toastDeleted, true)
     load()
   }
 
@@ -140,7 +143,7 @@ export default function RecurrentesPage() {
       category_id: item.category_id,
       date: today,
     })
-    showToast(`"${item.description}" registrado hoy`)
+    showToast(t.recurring.toastRegisteredToday(item.description))
   }
 
   const ingresos = items.filter(i => i.type === 'ingreso')
@@ -152,21 +155,21 @@ export default function RecurrentesPage() {
       {/* Header */}
       <div className={ClassNames.pageHeader}>
         <div>
-          <h1 className={ClassNames.pageTitle}>Recurrentes</h1>
-          <p className={ClassNames.pageSub}>Ingresos y gastos que se repiten cada mes</p>
+          <h1 className={ClassNames.pageTitle}>{t.recurring.title}</h1>
+          <p className={ClassNames.pageSub}>{t.recurring.sub}</p>
         </div>
         <button
           onClick={openCreate}
           className={ClassNames.newBtn}
         >
           <Plus className="w-4 h-4" />
-          Nuevo
+          {t.recurring.newBtn}
         </button>
       </div>
 
       {/* Info banner */}
       <div className={ClassNames.infoBanner}>
-        <p>Los recurrentes activos se registran automáticamente el día configurado de cada mes cuando ingresás a la app.</p>
+        <p>{t.recurring.infoBanner}</p>
       </div>
 
       {loading ? (
@@ -176,14 +179,14 @@ export default function RecurrentesPage() {
       ) : items.length === 0 ? (
         <div className={ClassNames.emptyWrap}>
           <RefreshCw className="w-12 h-12 mx-auto mb-3 opacity-30" />
-          <p>No hay transacciones recurrentes todavía</p>
+          <p>{t.recurring.noItems}</p>
           <button onClick={openCreate} className={ClassNames.emptyCreateLink}>
-            Crear la primera
+            {t.recurring.createFirst}
           </button>
         </div>
       ) : (
         <div className={ClassNames.listOuter}>
-          {[{ label: 'Ingresos', list: ingresos }, { label: 'Gastos', list: gastos }].map(({ label, list }) =>
+          {[{ label: t.common.incomes, list: ingresos }, { label: t.common.expenses, list: gastos }].map(({ label, list }) =>
             list.length > 0 ? (
               <div key={label}>
                 <h2 className={ClassNames.sectionTitle}>{label}</h2>
@@ -203,10 +206,10 @@ export default function RecurrentesPage() {
                       <div className={ClassNames.itemInfo}>
                         <p className={ClassNames.itemName}>{item.description}</p>
                         <p className={ClassNames.itemMeta}>
-                          {item.category?.name ?? 'Sin categoría'} · Día {item.day_of_month} de cada mes
+                          {item.category?.name ?? t.common.noCategory} · {t.recurring.metaDay(item.day_of_month)}
                           {item.end_date && (
                             <span className={isBefore(parseISO(item.end_date), new Date()) ? ClassNames.itemEndDateExpired : ClassNames.itemEndDateFuture}>
-                              · hasta {format(parseISO(item.end_date), 'MMM yyyy', { locale: es })}
+                              · {t.recurring.metaUntil(format(parseISO(item.end_date), 'MMM yyyy', { locale: dateLocale }))}
                             </span>
                           )}
                         </p>
@@ -222,14 +225,14 @@ export default function RecurrentesPage() {
                         <button
                           onClick={() => handleRunNow(item)}
                           className={ClassNames.runNowBtn}
-                          title="Registrar hoy"
+                          title={t.recurring.registerToday}
                         >
                           <CheckCircle className="w-4 h-4" />
                         </button>
                         <button
                           onClick={() => handleToggle(item)}
                           className={ClassNames.toggleBtn}
-                          title={item.active ? 'Desactivar' : 'Activar'}
+                          title={item.active ? t.recurring.deactivate : t.recurring.activate}
                         >
                           {item.active
                             ? <ToggleRight className="w-4 h-4 text-emerald-400" />
@@ -238,24 +241,24 @@ export default function RecurrentesPage() {
                         <button
                           onClick={() => openEdit(item)}
                           className={ClassNames.editBtn}
-                          title="Editar"
+                          title={t.common.edit}
                         >
                           <Pencil className="w-3.5 h-3.5" />
                         </button>
                         {deleteConfirm === item.id ? (
                           <div className={ClassNames.deleteConfirmWrap}>
                             <button onClick={() => handleDelete(item.id)} className={ClassNames.deleteConfirmYes}>
-                              Confirmar
+                              {t.common.confirm}
                             </button>
                             <button onClick={() => setDeleteConfirm(null)} className={ClassNames.deleteConfirmNo}>
-                              No
+                              {t.common.no}
                             </button>
                           </div>
                         ) : (
                           <button
                             onClick={() => setDeleteConfirm(item.id)}
                             className={ClassNames.deleteBtn}
-                            title="Eliminar"
+                            title={t.common.delete}
                           >
                             <Trash2 className="w-3.5 h-3.5" />
                           </button>
@@ -276,7 +279,7 @@ export default function RecurrentesPage() {
           <div className={ClassNames.modalBox}>
             <div className={ClassNames.modalHeader}>
               <h3 className={ClassNames.modalTitle}>
-                {editItem ? 'Editar recurrente' : 'Nuevo recurrente'}
+                {editItem ? t.recurring.formEdit : t.recurring.formNew}
               </h3>
               <button onClick={() => setShowForm(false)} className={ClassNames.modalCloseBtn}>
                 <X className="w-5 h-5" />
@@ -286,27 +289,27 @@ export default function RecurrentesPage() {
             <div className={ClassNames.modalFields}>
               {/* Type toggle */}
               <div className={ClassNames.typeToggleWrap}>
-                {(['ingreso', 'gasto'] as const).map(t => (
+                {(['ingreso', 'gasto'] as const).map(rType => (
                   <button
-                    key={t}
-                    onClick={() => setForm(f => ({ ...f, type: t, category_id: '' }))}
+                    key={rType}
+                    onClick={() => setForm(f => ({ ...f, type: rType, category_id: '' }))}
                     className={
-                      form.type === t
-                        ? t === 'ingreso' ? ClassNames.typeToggleIngresoActive : ClassNames.typeToggleGastoActive
+                      form.type === rType
+                        ? rType === 'ingreso' ? ClassNames.typeToggleIngresoActive : ClassNames.typeToggleGastoActive
                         : ClassNames.typeToggleInactive
                     }
                   >
-                    {t === 'ingreso' ? 'Ingreso' : 'Gasto'}
+                    {rType === 'ingreso' ? t.common.income : t.common.expense}
                   </button>
                 ))}
               </div>
 
               {/* Description */}
               <div>
-                <label className={ClassNames.fieldLabel}>Descripción</label>
+                <label className={ClassNames.fieldLabel}>{t.recurring.fieldDescription}</label>
                 <input
                   type="text"
-                  placeholder="Ej: Sueldo, Alquiler..."
+                  placeholder={t.recurring.fieldDescriptionPlaceholder}
                   value={form.description}
                   onChange={e => setForm(f => ({ ...f, description: e.target.value }))}
                   className={ClassNames.input}
@@ -315,7 +318,7 @@ export default function RecurrentesPage() {
 
               {/* Amount */}
               <div>
-                <label className={ClassNames.fieldLabel}>Monto (ARS)</label>
+                <label className={ClassNames.fieldLabel}>{t.recurring.fieldAmount}</label>
                 <input
                   type="number"
                   placeholder="0"
@@ -327,27 +330,27 @@ export default function RecurrentesPage() {
 
               {/* Day of month */}
               <div>
-                <label className={ClassNames.fieldLabel}>Día del mes</label>
+                <label className={ClassNames.fieldLabel}>{t.recurring.fieldDay}</label>
                 <select
                   value={form.day_of_month}
                   onChange={e => setForm(f => ({ ...f, day_of_month: Number(e.target.value) }))}
                   className={ClassNames.select}
                 >
                   {DAYS.map(d => (
-                    <option key={d} value={d}>Día {d}</option>
+                    <option key={d} value={d}>{t.recurring.dayOption(d)}</option>
                   ))}
                 </select>
               </div>
 
               {/* Category */}
               <div>
-                <label className={ClassNames.fieldLabel}>Categoría (opcional)</label>
+                <label className={ClassNames.fieldLabel}>{t.recurring.fieldCategory}</label>
                 <select
                   value={form.category_id}
                   onChange={e => setForm(f => ({ ...f, category_id: e.target.value }))}
                   className={ClassNames.select}
                 >
-                  <option value="">Sin categoría</option>
+                  <option value="">{t.common.noCategory}</option>
                   {filteredCategories.map(c => (
                     <option key={c.id} value={c.id}>{c.name}</option>
                   ))}
@@ -358,7 +361,7 @@ export default function RecurrentesPage() {
               <div>
                 <label className={ClassNames.endDateLabel}>
                   <Calendar className="w-3.5 h-3.5" />
-                  Hasta mes (opcional)
+                  {t.recurring.fieldEndDate}
                 </label>
                 <input
                   type="month"
@@ -371,7 +374,7 @@ export default function RecurrentesPage() {
                     onClick={() => setForm(f => ({ ...f, end_date: '' }))}
                     className={ClassNames.clearEndDateBtn}
                   >
-                    Quitar fecha de fin
+                    {t.recurring.clearEndDate}
                   </button>
                 )}
               </div>
@@ -382,14 +385,14 @@ export default function RecurrentesPage() {
                 onClick={() => setShowForm(false)}
                 className={ClassNames.cancelBtn}
               >
-                Cancelar
+                {t.common.cancel}
               </button>
               <button
                 onClick={handleSave}
                 disabled={saving || !form.description.trim() || !form.amount}
                 className={ClassNames.saveBtn}
               >
-                {saving ? 'Guardando...' : editItem ? 'Actualizar' : 'Crear'}
+                {saving ? t.common.saving : editItem ? t.common.save : t.common.new}
               </button>
             </div>
           </div>

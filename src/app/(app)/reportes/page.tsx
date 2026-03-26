@@ -16,8 +16,9 @@ import {
   Calendar,
 } from 'lucide-react'
 import { format, subMonths, startOfMonth, endOfMonth, parseISO } from 'date-fns'
-import { es } from 'date-fns/locale'
+import { es, enUS } from 'date-fns/locale'
 import { ClassNames } from './page.styles'
+import { useLang } from '@/lib/i18n/LangContext'
 
 function formatARS(value: number): string {
   return new Intl.NumberFormat('es-AR', {
@@ -30,6 +31,8 @@ function formatARS(value: number): string {
 
 export default function ReportesPage() {
   const supabase = createClient()
+  const { t, lang } = useLang()
+  const dateLocale = lang === 'en' ? enUS : es
   const [transactions, setTransactions] = useState<Transaction[]>([])
   const [loading, setLoading] = useState(true)
   const [chartType, setChartType] = useState<'bar' | 'line'>('bar')
@@ -63,7 +66,7 @@ export default function ReportesPage() {
   for (let i = monthsToShow - 1; i >= 0; i--) {
     const monthDate = subMonths(now, i)
     const monthKey = format(monthDate, 'yyyy-MM')
-    const monthLabel = format(monthDate, 'MMM yy', { locale: es })
+    const monthLabel = format(monthDate, 'MMM yy', { locale: dateLocale })
 
     const monthTxs = transactions.filter(
       (t) => t.date.substring(0, 7) === monthKey
@@ -136,7 +139,7 @@ export default function ReportesPage() {
     exportToPDF(
       transactions,
       { totalIngresos, totalGastos, balance },
-      `Últimos ${monthsToShow} meses`
+      t.reports.exportPdfLabel(monthsToShow)
     )
   }
 
@@ -145,9 +148,9 @@ export default function ReportesPage() {
       {/* Header */}
       <div className={ClassNames.pageHeader}>
         <div>
-          <h1 className={ClassNames.pageTitle}>Reportes</h1>
+          <h1 className={ClassNames.pageTitle}>{t.reports.title}</h1>
           <p className={ClassNames.pageSub}>
-            Análisis de los últimos {monthsToShow} meses
+            {t.reports.sub(monthsToShow)}
           </p>
         </div>
         <div className={ClassNames.headerActions}>
@@ -174,7 +177,7 @@ export default function ReportesPage() {
           <div className={ClassNames.summaryIconIngreso}>
             <TrendingUp className="w-4 h-4 text-emerald-400" />
           </div>
-          <p className={ClassNames.summaryLabel}>Total Ingresos</p>
+          <p className={ClassNames.summaryLabel}>{t.reports.totalIncome}</p>
           <p className={ClassNames.summaryValueIngreso}>{formatARS(totalIngresos)}</p>
         </div>
 
@@ -182,7 +185,7 @@ export default function ReportesPage() {
           <div className={ClassNames.summaryIconGasto}>
             <TrendingDown className="w-4 h-4 text-red-400" />
           </div>
-          <p className={ClassNames.summaryLabel}>Total Gastos</p>
+          <p className={ClassNames.summaryLabel}>{t.reports.totalExpenses}</p>
           <p className={ClassNames.summaryValueGasto}>{formatARS(totalGastos)}</p>
         </div>
 
@@ -190,7 +193,7 @@ export default function ReportesPage() {
           <div className={ClassNames.summaryIconBlue}>
             <BarChart3 className="w-4 h-4 text-blue-400" />
           </div>
-          <p className={ClassNames.summaryLabel}>Balance</p>
+          <p className={ClassNames.summaryLabel}>{t.common.balance}</p>
           <p className={balance >= 0 ? ClassNames.summaryValueBalancePos : ClassNames.summaryValueBalanceNeg}>
             {formatARS(balance)}
           </p>
@@ -200,7 +203,7 @@ export default function ReportesPage() {
           <div className={ClassNames.summaryIconAmber}>
             <Calendar className="w-4 h-4 text-amber-400" />
           </div>
-          <p className={ClassNames.summaryLabel}>Tasa de ahorro</p>
+          <p className={ClassNames.summaryLabel}>{t.reports.savingsRate}</p>
           <p className={ClassNames.summaryValueAmber}>{savingsRate.toFixed(1)}%</p>
         </div>
       </div>
@@ -208,7 +211,7 @@ export default function ReportesPage() {
       {/* Main chart */}
       <div className={ClassNames.chartCard}>
         <div className={ClassNames.chartHeader}>
-          <h3 className={ClassNames.chartTitle}>Ingresos vs Gastos por Mes</h3>
+          <h3 className={ClassNames.chartTitle}>{t.reports.chartTitle}</h3>
           <div className={ClassNames.chartControls}>
             {/* Months selector */}
             <select
@@ -216,9 +219,9 @@ export default function ReportesPage() {
               onChange={(e) => setMonthsToShow(Number(e.target.value))}
               className={ClassNames.monthsSelect}
             >
-              <option value={3}>3 meses</option>
-              <option value={6}>6 meses</option>
-              <option value={12}>12 meses</option>
+              <option value={3}>{t.reports.months3}</option>
+              <option value={6}>{t.reports.months6}</option>
+              <option value={12}>{t.reports.months12}</option>
             </select>
 
             {/* Chart type toggle */}
@@ -226,14 +229,14 @@ export default function ReportesPage() {
               <button
                 onClick={() => setChartType('bar')}
                 className={chartType === 'bar' ? ClassNames.chartTypeBtnActive : ClassNames.chartTypeBtnInactive}
-                title="Barras"
+                title={t.reports.barChart}
               >
                 <BarChart3 className="w-4 h-4" />
               </button>
               <button
                 onClick={() => setChartType('line')}
                 className={chartType === 'line' ? ClassNames.chartTypeBtnActive : ClassNames.chartTypeBtnInactive}
-                title="Líneas"
+                title={t.reports.lineChart}
               >
                 <LineChart className="w-4 h-4" />
               </button>
@@ -257,20 +260,20 @@ export default function ReportesPage() {
           <div className={ClassNames.pieHeader}>
             <div className={ClassNames.pieHeaderLeft}>
               <PieChart className="w-4 h-4 text-emerald-400" />
-              <h3 className="text-white font-semibold">Por categoría</h3>
+              <h3 className="text-white font-semibold">{pieCategory === 'gasto' ? t.reports.pieExpenses : t.reports.pieIncome}</h3>
             </div>
             <div className={ClassNames.pieTabs}>
               <button
                 onClick={() => setPieCategory('gasto')}
                 className={pieCategory === 'gasto' ? ClassNames.pieBtnGastoActive : ClassNames.pieBtnInactive}
               >
-                Gastos
+                {t.common.expenses}
               </button>
               <button
                 onClick={() => setPieCategory('ingreso')}
                 className={pieCategory === 'ingreso' ? ClassNames.pieBtnIngresoActive : ClassNames.pieBtnInactive}
               >
-                Ingresos
+                {t.common.incomes}
               </button>
             </div>
           </div>
@@ -285,7 +288,7 @@ export default function ReportesPage() {
 
         {/* Monthly summary */}
         <div className={ClassNames.monthlyCard}>
-          <h3 className={ClassNames.monthlyTitle}>Resumen mensual</h3>
+          <h3 className={ClassNames.monthlyTitle}>{t.reports.monthlySummary}</h3>
           <div className={ClassNames.monthlyList}>
             {monthlyData.map((m) => {
               const monthBalance = m.ingresos - m.gastos
@@ -311,7 +314,7 @@ export default function ReportesPage() {
                     />
                   </div>
                   <div className={ClassNames.monthlySubRow}>
-                    <span className={ClassNames.monthlySubText}>{formatARS(m.gastos)} gastos</span>
+                    <span className={ClassNames.monthlySubText}>{formatARS(m.gastos)} {t.common.expenses.toLowerCase()}</span>
                     <span className={ClassNames.monthlySubText}>{pct}%</span>
                   </div>
                 </div>

@@ -7,10 +7,12 @@ import { createClient } from '@/lib/supabase/client'
 import { seedDefaultCategories } from '@/lib/defaultCategories'
 import { TrendingUp, Mail, Lock, Loader2, Eye, EyeOff, CheckCircle } from 'lucide-react'
 import { ClassNames } from './page.styles'
+import { useT } from '@/lib/i18n/LangContext'
 
 export default function RegisterPage() {
   const router = useRouter()
   const supabase = createClient()
+  const t = useT()
 
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -25,26 +27,23 @@ export default function RegisterPage() {
     setError('')
 
     if (password !== confirmPassword) {
-      setError('Las contraseñas no coinciden')
+      setError(t.register.errorMismatch)
       return
     }
 
     if (password.length < 6) {
-      setError('La contraseña debe tener al menos 6 caracteres')
+      setError(t.register.errorTooShort)
       return
     }
 
     setLoading(true)
 
     try {
-      const { data, error: authError } = await supabase.auth.signUp({
-        email,
-        password,
-      })
+      const { data, error: authError } = await supabase.auth.signUp({ email, password })
 
       if (authError) {
         if (authError.message.includes('already registered')) {
-          setError('Este email ya está registrado')
+          setError(t.register.errorAlreadyRegistered)
         } else {
           setError(authError.message)
         }
@@ -57,13 +56,12 @@ export default function RegisterPage() {
 
       setSuccess(true)
 
-      // If email confirmation is disabled, redirect right away
       if (data.session) {
         router.push('/dashboard')
         router.refresh()
       }
     } catch {
-      setError('Error al registrarse. Intenta de nuevo.')
+      setError(t.register.errorDefault)
     } finally {
       setLoading(false)
     }
@@ -76,15 +74,10 @@ export default function RegisterPage() {
           <div className={ClassNames.successIcon}>
             <CheckCircle className="w-8 h-8 text-emerald-400" />
           </div>
-          <h2 className={ClassNames.successTitle}>¡Registro exitoso!</h2>
-          <p className={ClassNames.successText}>
-            Revisá tu email para confirmar tu cuenta. Si no ves el email, revisá tu carpeta de spam.
-          </p>
-          <Link
-            href="/login"
-            className={ClassNames.successLink}
-          >
-            Ir al login
+          <h2 className={ClassNames.successTitle}>{t.register.successTitle}</h2>
+          <p className={ClassNames.successText}>{t.register.successText}</p>
+          <Link href="/login" className={ClassNames.successLink}>
+            {t.register.successLink}
           </Link>
         </div>
       </div>
@@ -93,30 +86,24 @@ export default function RegisterPage() {
 
   return (
     <div className={ClassNames.root}>
-      {/* Background decoration */}
       <div className={ClassNames.bgDecor}>
         <div className={ClassNames.bgBlobTR} />
         <div className={ClassNames.bgBlobBL} />
       </div>
 
       <div className={ClassNames.content}>
-        {/* Logo */}
         <div className={ClassNames.logoWrap}>
           <div className={ClassNames.logoIcon}>
             <TrendingUp className="w-7 h-7 text-white" />
           </div>
-          <h1 className={ClassNames.appName}>GastosApp</h1>
-          <p className={ClassNames.tagline}>Creá tu cuenta gratis</p>
+          <h1 className={ClassNames.appName}>{t.appName}</h1>
+          <p className={ClassNames.tagline}>{t.register.tagline}</p>
         </div>
 
-        {/* Card */}
         <div className={ClassNames.card}>
           <form onSubmit={handleSubmit} className={ClassNames.form}>
-            {/* Email */}
             <div>
-              <label className={ClassNames.label}>
-                Email
-              </label>
+              <label className={ClassNames.label}>{t.login.emailLabel}</label>
               <div className={ClassNames.inputWrap}>
                 <Mail className={ClassNames.inputIcon} />
                 <input
@@ -124,17 +111,14 @@ export default function RegisterPage() {
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="tu@email.com"
+                  placeholder={t.login.emailPlaceholder}
                   className={ClassNames.input}
                 />
               </div>
             </div>
 
-            {/* Password */}
             <div>
-              <label className={ClassNames.label}>
-                Contraseña
-              </label>
+              <label className={ClassNames.label}>{t.login.passwordLabel}</label>
               <div className={ClassNames.inputWrap}>
                 <Lock className={ClassNames.inputIcon} />
                 <input
@@ -142,28 +126,17 @@ export default function RegisterPage() {
                   required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  placeholder="Mínimo 6 caracteres"
+                  placeholder={t.register.passwordPlaceholder}
                   className={ClassNames.inputWithToggle}
                 />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className={ClassNames.toggleBtn}
-                >
-                  {showPassword ? (
-                    <EyeOff className="w-4 h-4" />
-                  ) : (
-                    <Eye className="w-4 h-4" />
-                  )}
+                <button type="button" onClick={() => setShowPassword(!showPassword)} className={ClassNames.toggleBtn}>
+                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
               </div>
             </div>
 
-            {/* Confirm Password */}
             <div>
-              <label className={ClassNames.label}>
-                Confirmar contraseña
-              </label>
+              <label className={ClassNames.label}>{t.register.confirmLabel}</label>
               <div className={ClassNames.inputWrap}>
                 <Lock className={ClassNames.inputIcon} />
                 <input
@@ -171,7 +144,7 @@ export default function RegisterPage() {
                   required
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
-                  placeholder="Repetí tu contraseña"
+                  placeholder={t.register.confirmPlaceholder}
                   className={ClassNames.input}
                 />
               </div>
@@ -183,38 +156,29 @@ export default function RegisterPage() {
               </div>
             )}
 
-            <button
-              type="submit"
-              disabled={loading}
-              className={ClassNames.submitBtn}
-            >
+            <button type="submit" disabled={loading} className={ClassNames.submitBtn}>
               {loading ? (
                 <>
                   <Loader2 className="w-4 h-4 animate-spin" />
-                  Registrando...
+                  {t.register.submitting}
                 </>
               ) : (
-                'Crear cuenta'
+                t.register.submitBtn
               )}
             </button>
           </form>
 
           <div className={ClassNames.cardFooter}>
             <p className={ClassNames.cardFooterText}>
-              ¿Ya tenés cuenta?{' '}
-              <Link
-                href="/login"
-                className={ClassNames.cardFooterLink}
-              >
-                Iniciá sesión
+              {t.register.alreadyHaveAccount}{' '}
+              <Link href="/login" className={ClassNames.cardFooterLink}>
+                {t.register.signIn}
               </Link>
             </p>
           </div>
         </div>
 
-        <p className={ClassNames.hint}>
-          Al registrarte, se crearán categorías de ejemplo para que puedas empezar rápido.
-        </p>
+        <p className={ClassNames.hint}>{t.register.hint}</p>
       </div>
     </div>
   )

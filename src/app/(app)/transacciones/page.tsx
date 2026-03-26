@@ -29,8 +29,9 @@ import {
   Camera,
 } from 'lucide-react'
 import { format, parse, isValid, startOfMonth, endOfMonth, subMonths, addMonths } from 'date-fns'
-import { es } from 'date-fns/locale'
+import { es, enUS } from 'date-fns/locale'
 import { ClassNames } from './page.styles'
+import { useLang } from '@/lib/i18n/LangContext'
 
 const PAGE_SIZE = 15
 
@@ -268,6 +269,8 @@ function TransaccionesPageInner() {
   const supabase = createClient()
   const searchParams = useSearchParams()
   const router = useRouter()
+  const { t, lang } = useLang()
+  const dateLocale = lang === 'en' ? enUS : es
   const [transactions, setTransactions] = useState<Transaction[]>([])
   const [loading, setLoading] = useState(true)
   const [showForm, setShowForm] = useState(false)
@@ -346,7 +349,7 @@ function TransaccionesPageInner() {
         formData.append('file', file)
         const res = await fetch('/api/parse-receipt', { method: 'POST', body: formData })
         const json = await res.json()
-        if (!res.ok) throw new Error(json.error || 'Error al procesar el comprobante')
+        if (!res.ok) throw new Error(json.error || t.transactions.errorProcessReceipt)
         setReceiptPreview(json.transaction)
       } catch (err) {
         setImportResult({ total: 0, imported: 0, errors: [String(err)] })
@@ -522,10 +525,10 @@ function TransaccionesPageInner() {
           const dupIndexes = new Set(await filterDuplicates(supabase, toInsert as { date: string; description: string | null; type: string; amount: number }[]))
           const unique = toInsert.filter((_, i) => !dupIndexes.has(i))
           const skipped = toInsert.length - unique.length
-          if (skipped > 0) result.errors.push(`${skipped} transacción(es) ya existían y fueron omitidas`)
+          if (skipped > 0) result.errors.push(t.transactions.errorDuplicatesSkipped(skipped))
           if (unique.length > 0) {
             const { error } = await supabase.from('transactions').insert(unique)
-            if (error) result.errors.push(`Error al guardar: ${error.message}`)
+            if (error) result.errors.push(t.transactions.errorSave(error.message))
             else { result.imported = unique.length; load() }
           }
         }
@@ -585,7 +588,7 @@ function TransaccionesPageInner() {
           const rowNum = headerRowIndex + i + 2
 
           const date = parseDate(row[iFecha])
-          if (!date) { result.errors.push(`Fila ${rowNum}: fecha inválida`); continue }
+          if (!date) { result.errors.push(t.transactions.errorInvalidDate(rowNum)); continue }
 
           const debito = iDebito >= 0 ? parseArgAmount(row[iDebito]) : 0
           const credito = iCredito >= 0 ? parseArgAmount(row[iCredito]) : 0
@@ -619,7 +622,7 @@ function TransaccionesPageInner() {
         const iCur = normHeaders.findIndex(h => ['moneda','currency','divisa'].includes(h))
 
         if (iF < 0 || iT < 0 || iM < 0) {
-          result.errors.push('Columnas requeridas no encontradas: fecha, tipo, monto')
+          result.errors.push(t.transactions.errorMissingColumns)
           setImportResult(result)
           return
         }
@@ -629,13 +632,13 @@ function TransaccionesPageInner() {
           const rowNum = headerRowIndex + i + 2
 
           const date = parseDate(row[iF])
-          if (!date) { result.errors.push(`Fila ${rowNum}: fecha inválida "${row[iF]}"`); continue }
+          if (!date) { result.errors.push(t.transactions.errorInvalidDateValue(rowNum, String(row[iF]))); continue }
 
           const type = parseType(row[iT])
-          if (!type) { result.errors.push(`Fila ${rowNum}: tipo inválido "${row[iT]}"`); continue }
+          if (!type) { result.errors.push(t.transactions.errorInvalidType(rowNum, String(row[iT]))); continue }
 
           const amount = parseFloat(String(row[iM]).replace(/\./g,'').replace(',','.').replace(/[^0-9.]/g,''))
-          if (isNaN(amount) || amount <= 0) { result.errors.push(`Fila ${rowNum}: monto inválido`); continue }
+          if (isNaN(amount) || amount <= 0) { result.errors.push(t.transactions.errorInvalidAmount(rowNum)); continue }
 
           const description = iD >= 0 ? cleanDescription(row[iD]) || null : null
 
@@ -673,11 +676,11 @@ function TransaccionesPageInner() {
         const dupIndexes = new Set(await filterDuplicates(supabase, toInsert as { date: string; description: string | null; type: string; amount: number }[]))
         const unique = toInsert.filter((_, i) => !dupIndexes.has(i))
         const skipped = toInsert.length - unique.length
-        if (skipped > 0) result.errors.push(`${skipped} transacción(es) ya existían y fueron omitidas`)
+        if (skipped > 0) result.errors.push(t.transactions.errorDuplicatesSkipped(skipped))
         if (unique.length > 0) {
           const { error } = await supabase.from('transactions').insert(unique)
           if (error) {
-            result.errors.push(`Error al guardar: ${error.message}`)
+            result.errors.push(t.transactions.errorSave(error.message))
           } else {
             result.imported = unique.length
             load()
@@ -687,7 +690,7 @@ function TransaccionesPageInner() {
 
       setImportResult(result)
     } catch (err) {
-      setImportResult({ total: 0, imported: 0, errors: [`Error al leer el archivo: ${String(err)}`] })
+      setImportResult({ total: 0, imported: 0, errors: [t.transactions.errorReadFile(String(err))] })
     } finally {
       setImporting(false)
     }
@@ -708,7 +711,7 @@ function TransaccionesPageInner() {
       const result: ImportResult = { total: parsed.length, imported: 0, errors: [] }
 
       if (parsed.length === 0) {
-        result.errors.push('No se encontraron transacciones en el PDF. Verificá que sea un resumen de Mercado Pago.')
+        result.errors.push(t.transactions.errorNoPdfTxs)
         setImportResult(result)
         return
       }
@@ -745,11 +748,11 @@ function TransaccionesPageInner() {
       const dupIndexes = new Set(await filterDuplicates(supabase, toInsert as { date: string; description: string | null; type: string; amount: number }[]))
       const unique = toInsert.filter((_, i) => !dupIndexes.has(i))
       const skipped = toInsert.length - unique.length
-      if (skipped > 0) result.errors.push(`${skipped} transacción(es) ya existían y fueron omitidas`)
+      if (skipped > 0) result.errors.push(t.transactions.errorDuplicatesSkipped(skipped))
       if (unique.length > 0) {
         const { error } = await supabase.from('transactions').insert(unique)
         if (error) {
-          result.errors.push(`Error al guardar: ${error.message}`)
+          result.errors.push(t.transactions.errorSave(error.message))
         } else {
           result.imported = unique.length
           load()
@@ -758,7 +761,7 @@ function TransaccionesPageInner() {
 
       setImportResult(result)
     } catch (err) {
-      setImportResult({ total: 0, imported: 0, errors: [`Error al leer el PDF: ${String(err)}`] })
+      setImportResult({ total: 0, imported: 0, errors: [t.transactions.errorReadPdf(String(err))] })
     } finally {
       setImporting(false)
     }
@@ -827,7 +830,7 @@ function TransaccionesPageInner() {
       formData.append('file', file)
       const res = await fetch('/api/parse-receipt', { method: 'POST', body: formData })
       const json = await res.json()
-      if (!res.ok) throw new Error(json.error || 'Error al procesar el comprobante')
+      if (!res.ok) throw new Error(json.error || t.transactions.errorProcessReceipt)
       setReceiptPreview(json.transaction)
     } catch (err) {
       setImportResult({ total: 0, imported: 0, errors: [String(err)] })
@@ -874,7 +877,7 @@ function TransaccionesPageInner() {
       {/* Header */}
       <div className={ClassNames.pageHeader}>
         <div>
-          <h1 className={ClassNames.pageTitle}>Transacciones</h1>
+          <h1 className={ClassNames.pageTitle}>{t.transactions.title}</h1>
           <div className={ClassNames.monthNav}>
             <button
               onClick={() => { setCurrentMonth(m => subMonths(m, 1)); setPage(1) }}
@@ -883,7 +886,7 @@ function TransaccionesPageInner() {
               <ChevronLeft className="w-4 h-4" />
             </button>
             <span className={ClassNames.monthLabel}>
-              {format(currentMonth, 'MMMM yyyy', { locale: es })}
+              {format(currentMonth, 'MMMM yyyy', { locale: dateLocale })}
             </span>
             <button
               onClick={() => { setCurrentMonth(m => addMonths(m, 1)); setPage(1) }}
@@ -897,11 +900,11 @@ function TransaccionesPageInner() {
                 onClick={() => { setCurrentMonth(startOfMonth(new Date())); setPage(1) }}
                 className={ClassNames.todayBtn}
               >
-                Hoy
+                {t.common.today}
               </button>
             )}
             <span className={ClassNames.totalCount}>
-              · {total} transacción{total !== 1 ? 'es' : ''}
+              {t.transactions.transactionCount(total)}
             </span>
           </div>
         </div>
@@ -931,19 +934,19 @@ function TransaccionesPageInner() {
             onClick={handleCleanDuplicates}
             disabled={cleaning || importing}
             className={ClassNames.btnDuplicates}
-            title="Eliminar transacciones duplicadas"
+            title={t.transactions.removeDuplicatesTitle}
           >
             <X className="w-4 h-4" />
-            <span className={ClassNames.btnLabel}>{cleaning ? 'Limpiando...' : 'Duplicados'}</span>
+            <span className={ClassNames.btnLabel}>{cleaning ? t.transactions.cleaning : t.transactions.duplicates}</span>
           </button>
           <button
             onClick={() => setShowClearConfirm(true)}
             disabled={cleaning || importing}
             className={ClassNames.btnClearAll}
-            title="Eliminar todas las transacciones"
+            title={t.transactions.clearAllTitle}
           >
             <Trash2 className="w-4 h-4" />
-            <span className={ClassNames.btnLabel}>Limpiar</span>
+            <span className={ClassNames.btnLabel}>{t.transactions.clear}</span>
           </button>
 
           {/* Import dropdown */}
@@ -954,7 +957,7 @@ function TransaccionesPageInner() {
               className={ClassNames.btnImport}
             >
               <Upload className="w-4 h-4 text-yellow-400" />
-              <span className={ClassNames.btnLabel}>{importing ? 'Importando...' : receiptParsing ? 'Analizando...' : 'Importar'}</span>
+              <span className={ClassNames.btnLabel}>{importing ? t.transactions.importing : receiptParsing ? t.transactions.analyzing : t.transactions.import}</span>
               <ChevronDown className="w-3.5 h-3.5 opacity-60" />
             </button>
             {showImportMenu && (
@@ -971,14 +974,14 @@ function TransaccionesPageInner() {
                   className={ClassNames.menuItem}
                 >
                   <FileText className="w-4 h-4 text-red-400" />
-                  PDF Mercado Pago
+                  {t.transactions.pdfMercadoPago}
                 </button>
                 <button
                   onClick={() => { setShowImportMenu(false); receiptInputRef.current?.click() }}
                   className={ClassNames.menuItem}
                 >
                   <Camera className="w-4 h-4 text-purple-400" />
-                  Comprobante (OCR)
+                  {t.transactions.receiptOcr}
                 </button>
               </div>
             )}
@@ -991,7 +994,7 @@ function TransaccionesPageInner() {
               className={ClassNames.btnExport}
             >
               <Download className="w-4 h-4 text-emerald-400" />
-              <span className={ClassNames.btnLabel}>Exportar</span>
+              <span className={ClassNames.btnLabel}>{t.transactions.export}</span>
               <ChevronDown className="w-3.5 h-3.5 opacity-60" />
             </button>
             {showExportMenu && (
@@ -1018,7 +1021,7 @@ function TransaccionesPageInner() {
             className={ClassNames.btnNew}
           >
             <Plus className="w-4 h-4" />
-            Nueva
+            {t.transactions.newBtn}
           </button>
         </div>
       </div>
@@ -1029,7 +1032,7 @@ function TransaccionesPageInner() {
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
           <input
             type="text"
-            placeholder="Buscar por descripción..."
+            placeholder={t.transactions.searchPlaceholder}
             value={search}
             onChange={(e) => { setSearch(e.target.value); setPage(1) }}
             className={ClassNames.searchInput}
@@ -1051,7 +1054,7 @@ function TransaccionesPageInner() {
                   : ClassNames.filterBtnInactive
               }`}
             >
-              {type === 'all' ? 'Todos' : type === 'ingreso' ? 'Ingresos' : 'Gastos'}
+              {type === "all" ? t.transactions.all : type === "ingreso" ? t.common.incomes : t.common.expenses}
             </button>
           ))}
 
@@ -1063,10 +1066,10 @@ function TransaccionesPageInner() {
             >
               <Tag className="w-3.5 h-3.5" />
               {filterCategory === 'all'
-                ? 'Categoría'
+                ? t.common.category
                 : filterCategory === 'none'
-                ? 'Sin categoría'
-                : allCategories.find(c => c.id === filterCategory)?.name ?? 'Categoría'}
+                ? t.common.noCategory
+                : allCategories.find(c => c.id === filterCategory)?.name ?? t.common.category}
               <ChevronDown className="w-3 h-3" />
             </button>
 
@@ -1077,14 +1080,14 @@ function TransaccionesPageInner() {
                     onClick={() => { setFilterCategory('all'); setPage(1); setCatDropdownOpen(false) }}
                     className={filterCategory === 'all' ? ClassNames.catDropdownItemActive : ClassNames.catDropdownItemInactive}
                   >
-                    Todas las categorías
+                    {t.common.allCategories}
                   </button>
                   <button
                     onClick={() => { setFilterCategory('none'); setPage(1); setCatDropdownOpen(false) }}
                     className={filterCategory === 'none' ? ClassNames.catDropdownItemActive : ClassNames.catDropdownItemInactive}
                   >
                     <div className={ClassNames.catDropdownDot} />
-                    Sin categoría
+                    {t.common.noCategory}
                   </button>
                   <div className={ClassNames.catDropdownDivider} />
                   {allCategories.map(cat => (
@@ -1115,14 +1118,14 @@ function TransaccionesPageInner() {
                     onClick={() => { setSortDesc(!sortDesc); setPage(1) }}
                     className={ClassNames.thSortBtn}
                   >
-                    Fecha <ArrowUpDown className="w-3 h-3" />
+                    {t.transactions.tableDate} <ArrowUpDown className="w-3 h-3" />
                   </button>
                 </th>
-                <th className={ClassNames.th}>Tipo</th>
-                <th className={ClassNames.th}>Categoría</th>
-                <th className={ClassNames.th}>Descripción</th>
-                <th className={ClassNames.thRight}>Monto</th>
-                <th className={ClassNames.thRight}>Acciones</th>
+                <th className={ClassNames.th}>{t.transactions.tableType}</th>
+                <th className={ClassNames.th}>{t.transactions.tableCategory}</th>
+                <th className={ClassNames.th}>{t.transactions.tableDescription}</th>
+                <th className={ClassNames.thRight}>{t.transactions.tableAmount}</th>
+                <th className={ClassNames.thRight}>{t.transactions.tableActions}</th>
               </tr>
             </thead>
             <tbody>
@@ -1140,19 +1143,19 @@ function TransaccionesPageInner() {
                 <tr className={ClassNames.trEmpty}>
                   <td colSpan={6} className={ClassNames.tdEmpty}>
                     {search || filterType !== 'all'
-                      ? 'No se encontraron transacciones con ese filtro'
-                      : 'No hay transacciones aún. ¡Crea la primera!'}
+                      ? t.transactions.noResults
+                      : t.transactions.noTransactions}
                   </td>
                 </tr>
               ) : (
                 transactions.map((tx) => (
                   <tr key={tx.id} className={ClassNames.trData}>
                     <td className={ClassNames.tdDate}>
-                      {format(new Date(tx.date + 'T00:00:00'), 'dd/MM/yyyy', { locale: es })}
+                      {format(new Date(tx.date + 'T00:00:00'), 'dd/MM/yyyy', { locale: dateLocale })}
                     </td>
                     <td className={ClassNames.tdType}>
                       <span className={tx.type === 'ingreso' ? ClassNames.typeBadgeIngreso : ClassNames.typeBadgeGasto}>
-                        {tx.type === 'ingreso' ? 'Ingreso' : 'Gasto'}
+                        {tx.type === 'ingreso' ? t.common.income : t.common.expense}
                       </span>
                     </td>
                     <td className={ClassNames.tdCategory}>
@@ -1175,7 +1178,7 @@ function TransaccionesPageInner() {
                             onClick={(e) => { e.stopPropagation(); setQuickCatTx(quickCatTx === tx.id ? null : tx.id) }}
                             className={ClassNames.noCatBtn}
                           >
-                            Categoría
+                            {t.common.category}
                           </button>
                           )}
                           {quickCatTx === tx.id && (
@@ -1216,7 +1219,7 @@ function TransaccionesPageInner() {
                         <button
                           onClick={() => handleEdit(tx)}
                           className={ClassNames.editBtn}
-                          title="Editar"
+                          title={t.common.edit}
                         >
                           <Pencil className="w-3.5 h-3.5" />
                         </button>
@@ -1226,20 +1229,20 @@ function TransaccionesPageInner() {
                               onClick={() => handleDelete(tx.id)}
                               className={ClassNames.deleteConfirmYes}
                             >
-                              Confirmar
+                              {t.common.confirm}
                             </button>
                             <button
                               onClick={() => setDeleteConfirm(null)}
                               className={ClassNames.deleteConfirmNo}
                             >
-                              No
+                              {t.common.no}
                             </button>
                           </div>
                         ) : (
                           <button
                             onClick={() => setDeleteConfirm(tx.id)}
                             className={ClassNames.deleteBtn}
-                            title="Eliminar"
+                            title={t.common.delete}
                           >
                             <Trash2 className="w-3.5 h-3.5" />
                           </button>
@@ -1257,8 +1260,7 @@ function TransaccionesPageInner() {
         {totalPages > 1 && (
           <div className={ClassNames.pagination}>
             <p className={ClassNames.paginationInfo}>
-              Mostrando {(page - 1) * PAGE_SIZE + 1}–
-              {Math.min(page * PAGE_SIZE, total)} de {total}
+              {t.transactions.showing((page - 1) * PAGE_SIZE + 1, Math.min(page * PAGE_SIZE, total), total)}
             </p>
             <div className={ClassNames.paginationControls}>
               <button
@@ -1297,7 +1299,7 @@ function TransaccionesPageInner() {
         <div className={ClassNames.modalOverlay}>
           <div className={ClassNames.modalBox}>
             <div className={ClassNames.modalHeader}>
-              <h3 className={ClassNames.modalTitle}>Resultado de importación</h3>
+              <h3 className={ClassNames.modalTitle}>{t.transactions.importResultTitle}</h3>
               <button onClick={() => setImportResult(null)} className={ClassNames.modalCloseBtn}>
                 <X className="w-5 h-5" />
               </button>
@@ -1312,8 +1314,8 @@ function TransaccionesPageInner() {
               <div>
                 <p className={ClassNames.importResultText}>
                   {cleaning
-                    ? `${importResult.imported} duplicados eliminados`
-                    : `${importResult.imported} de ${importResult.total} transacciones importadas`}
+                    ? t.transactions.importDuplicatesText(importResult.imported)
+                    : t.transactions.importResultText(importResult.imported, importResult.total)}
                 </p>
                 {importResult.errors.length > 0 && (
                   <p className={ClassNames.importResultSub}>{importResult.errors[0]}</p>
@@ -1323,7 +1325,7 @@ function TransaccionesPageInner() {
 
             {importResult.errors.length > 0 && (
               <div className={ClassNames.importErrorBox}>
-                <p className={ClassNames.importErrorLabel}>Errores:</p>
+                <p className={ClassNames.importErrorLabel}>{t.common.errors}:</p>
                 {importResult.errors.map((err, i) => (
                   <p key={i} className={ClassNames.importErrorItem}>• {err}</p>
                 ))}
@@ -1331,18 +1333,18 @@ function TransaccionesPageInner() {
             )}
 
             <p className={ClassNames.importTip}>
-              Tip:{' '}
+              {t.common.tip}:{" "}
               <button onClick={downloadTemplate} className="underline hover:text-gray-300 transition-colors">
-                descargá la plantilla
+                {t.transactions.importTip}
               </button>{' '}
-              para ver el formato correcto.
+              {t.transactions.importTipFull}
             </p>
 
             <button
               onClick={() => setImportResult(null)}
               className={ClassNames.importCloseBtn}
             >
-              Cerrar
+              {t.common.close}
             </button>
           </div>
         </div>
@@ -1355,7 +1357,7 @@ function TransaccionesPageInner() {
             <div className={ClassNames.modalHeader}>
               <h3 className={ClassNames.receiptTitle}>
                 <Camera className="w-5 h-5 text-purple-400" />
-                Comprobante detectado
+                {t.transactions.receiptDetected}
               </h3>
               <button onClick={() => setReceiptPreview(null)} className={ClassNames.modalCloseBtn}>
                 <X className="w-5 h-5" />
@@ -1363,7 +1365,7 @@ function TransaccionesPageInner() {
             </div>
             <div className={ClassNames.receiptRows}>
               <div className={ClassNames.receiptRow}>
-                <span className={ClassNames.receiptLabel}>Fecha</span>
+                <span className={ClassNames.receiptLabel}>{t.common.date}</span>
                 <input
                   type="date"
                   value={receiptPreview.date}
@@ -1372,7 +1374,7 @@ function TransaccionesPageInner() {
                 />
               </div>
               <div className={ClassNames.receiptRow}>
-                <span className={ClassNames.receiptLabel}>Descripción</span>
+                <span className={ClassNames.receiptLabel}>{t.common.description}</span>
                 <input
                   type="text"
                   value={receiptPreview.description}
@@ -1381,7 +1383,7 @@ function TransaccionesPageInner() {
                 />
               </div>
               <div className={ClassNames.receiptRow}>
-                <span className={ClassNames.receiptLabel}>Monto</span>
+                <span className={ClassNames.receiptLabel}>{t.common.amount}</span>
                 <input
                   type="number"
                   value={receiptPreview.amount}
@@ -1390,19 +1392,19 @@ function TransaccionesPageInner() {
                 />
               </div>
               <div className={ClassNames.receiptTypeRow}>
-                <span className={ClassNames.receiptLabel}>Tipo</span>
+                <span className={ClassNames.receiptLabel}>{t.common.type}</span>
                 <div className={ClassNames.receiptTypeButtons}>
-                  {(['gasto', 'ingreso'] as const).map(t => (
+                  {(['gasto', 'ingreso'] as const).map(txType => (
                     <button
-                      key={t}
-                      onClick={() => setReceiptPreview(p => p ? { ...p, type: t } : p)}
+                      key={txType}
+                      onClick={() => setReceiptPreview(p => p ? { ...p, type: txType } : p)}
                       className={
-                        receiptPreview.type === t
-                          ? t === 'gasto' ? ClassNames.receiptTypeBtnGastoActive : ClassNames.receiptTypeBtnIngresoActive
+                        receiptPreview.type === txType
+                          ? txType === 'gasto' ? ClassNames.receiptTypeBtnGastoActive : ClassNames.receiptTypeBtnIngresoActive
                           : ClassNames.receiptTypeBtnInactive
                       }
                     >
-                      {t === 'gasto' ? 'Gasto' : 'Ingreso'}
+                      {txType === 'gasto' ? t.common.expense : t.common.income}
                     </button>
                   ))}
                 </div>
@@ -1413,13 +1415,13 @@ function TransaccionesPageInner() {
                 onClick={() => setReceiptPreview(null)}
                 className={ClassNames.receiptCancelBtn}
               >
-                Cancelar
+                {t.common.cancel}
               </button>
               <button
                 onClick={handleConfirmReceipt}
                 className={ClassNames.receiptConfirmBtn}
               >
-                Agregar
+                {t.transactions.receiptAdd}
               </button>
             </div>
           </div>
@@ -1433,22 +1435,22 @@ function TransaccionesPageInner() {
             <div className={ClassNames.clearAllIcon}>
               <Trash2 className="w-7 h-7 text-red-400" />
             </div>
-            <h3 className={ClassNames.cleanTitle}>¿Seguro querés eliminar las transacciones?</h3>
-            <p className={ClassNames.cleanText}>Esta acción no se puede deshacer. Se eliminarán <strong className="text-white">todas</strong> las transacciones.</p>
+            <h3 className={ClassNames.cleanTitle}>{t.transactions.clearAllConfirmTitle}</h3>
+            <p className={ClassNames.cleanText}>{t.transactions.clearAllConfirmText}</p>
             <div className={ClassNames.clearAllActions}>
               <button
                 onClick={() => setShowClearConfirm(false)}
                 disabled={clearing}
                 className={ClassNames.clearAllCancelBtn}
               >
-                Cancelar
+                {t.common.cancel}
               </button>
               <button
                 onClick={handleClearAll}
                 disabled={clearing}
                 className={ClassNames.clearAllConfirmBtn}
               >
-                {clearing ? 'Eliminando...' : 'Sí, eliminar todo'}
+                {clearing ? t.transactions.clearAllDeleting : t.transactions.clearAllConfirmBtn}
               </button>
             </div>
           </div>
@@ -1464,9 +1466,9 @@ function TransaccionesPageInner() {
                 <div className={ClassNames.cleanSuccessIcon}>
                   <CheckCircle className="w-7 h-7 text-emerald-400" />
                 </div>
-                <h3 className={ClassNames.cleanTitle}>¡Listo!</h3>
+                <h3 className={ClassNames.cleanTitle}>{t.transactions.cleanDoneTitle}</h3>
                 <p className={ClassNames.cleanText}>
-                  Se eliminaron <span className="text-white font-semibold">{cleanResult.deleted}</span> transacciones duplicadas correctamente.
+                  {t.transactions.cleanDoneText(cleanResult.deleted)}
                 </p>
               </>
             ) : (
@@ -1474,15 +1476,15 @@ function TransaccionesPageInner() {
                 <div className={ClassNames.cleanNoneIcon}>
                   <CheckCircle className="w-7 h-7 text-blue-400" />
                 </div>
-                <h3 className={ClassNames.cleanTitle}>Sin duplicados</h3>
-                <p className={ClassNames.cleanText}>No se encontraron transacciones duplicadas.</p>
+                <h3 className={ClassNames.cleanTitle}>{t.transactions.cleanNoneTitle}</h3>
+                <p className={ClassNames.cleanText}>{t.transactions.cleanNoneText}</p>
               </>
             )}
             <button
               onClick={() => setCleanResult(null)}
               className={ClassNames.cleanOkBtn}
             >
-              OK
+              {t.common.ok}
             </button>
           </div>
         </div>

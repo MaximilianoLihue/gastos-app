@@ -2,7 +2,9 @@ import { createClient } from '@/lib/supabase/server'
 import { fetchAllDolarRates, calcularUSDPosibles } from '@/lib/dolar'
 import { Transaction, DashboardStats } from '@/lib/types'
 import { format, startOfMonth, endOfMonth, subMonths } from 'date-fns'
-import { es } from 'date-fns/locale'
+import { es, enUS } from 'date-fns/locale'
+import { cookies } from 'next/headers'
+import { getT, LANG_COOKIE, DEFAULT_LANG, type Lang } from '@/lib/i18n/index'
 import {
   TrendingUp,
   TrendingDown,
@@ -36,6 +38,10 @@ function formatUSD(value: number): string {
 
 export default async function DashboardPage() {
   const supabase = await createClient()
+  const cookieStore = await cookies()
+  const lang = (cookieStore.get(LANG_COOKIE)?.value ?? DEFAULT_LANG) as Lang
+  const t = getT(lang)
+  const dateLocale = lang === 'en' ? enUS : es
 
   const now = new Date()
   const thisMonthStart = format(startOfMonth(now), 'yyyy-MM-dd')
@@ -111,12 +117,12 @@ export default async function DashboardPage() {
 
   // Top spending categories this month
   const gastosPorCategoria = transactions
-    .filter(t => t.type === 'gasto')
-    .reduce((acc, t) => {
-      const key = t.category?.name ?? 'Sin categoría'
-      const color = t.category?.color ?? '#6b7280'
+    .filter(tx => tx.type === 'gasto')
+    .reduce((acc, tx) => {
+      const key = tx.category?.name ?? t.common.noCategory
+      const color = tx.category?.color ?? '#6b7280'
       if (!acc[key]) acc[key] = { name: key, color, total: 0 }
-      acc[key].total += toARS(Number(t.amount), t.currency ?? 'ARS')
+      acc[key].total += toARS(Number(tx.amount), tx.currency ?? 'ARS')
       return acc
     }, {} as Record<string, { name: string; color: string; total: number }>)
 
@@ -127,10 +133,10 @@ export default async function DashboardPage() {
   // Spending alerts — compare this month vs last month by category
   type LastTx = { amount: number; type: string; currency?: string; category?: { name: string; color: string } | null }
   const gastosPorCatMesAnterior = ((lastMonthTxs ?? []) as unknown as LastTx[])
-    .filter(t => t.type === 'gasto')
-    .reduce((acc, t) => {
-      const key = t.category?.name ?? 'Sin categoría'
-      acc[key] = (acc[key] ?? 0) + toARS(Number(t.amount), t.currency ?? 'ARS')
+    .filter(tx => tx.type === 'gasto')
+    .reduce((acc, tx) => {
+      const key = tx.category?.name ?? t.common.noCategory
+      acc[key] = (acc[key] ?? 0) + toARS(Number(tx.amount), tx.currency ?? 'ARS')
       return acc
     }, {} as Record<string, number>)
 
@@ -158,7 +164,7 @@ export default async function DashboardPage() {
         category: name, color: data.color,
         thisMonth: data.total, lastMonth: last,
         pctOfTotal, pctChange, type: 'spike',
-        message: `Subió ${pctChange.toFixed(0)}% respecto al mes pasado`,
+        message: t.dashboard.alertSpike(pctChange.toFixed(0)),
       })
     }
     // Alert: category represents more than 35% of total spending
@@ -167,7 +173,7 @@ export default async function DashboardPage() {
         category: name, color: data.color,
         thisMonth: data.total, lastMonth: last,
         pctOfTotal, pctChange, type: 'high_share',
-        message: `Representa el ${pctOfTotal.toFixed(0)}% de tus gastos del mes`,
+        message: t.dashboard.alertHighShare(pctOfTotal.toFixed(0)),
       })
     }
     // Alert: new category this month (wasn't in last month) with significant amount
@@ -176,7 +182,7 @@ export default async function DashboardPage() {
         category: name, color: data.color,
         thisMonth: data.total, lastMonth: 0,
         pctOfTotal, pctChange, type: 'new',
-        message: `Gasto nuevo este mes — ${pctOfTotal.toFixed(0)}% de tus gastos totales`,
+        message: t.dashboard.alertNew(pctOfTotal.toFixed(0)),
       })
     }
   }
@@ -184,17 +190,17 @@ export default async function DashboardPage() {
   // Sort by most impactful
   alerts.sort((a, b) => b.thisMonth - a.thisMonth)
 
-  const mesActual = format(now, 'MMMM yyyy', { locale: es })
+  const mesActual = format(now, 'MMMM yyyy', { locale: dateLocale })
 
   return (
     <div className={ClassNames.root}>
       {/* Welcome */}
       <div>
         <h1 className={ClassNames.welcomeTitle}>
-          {format(now, "EEEE, d 'de' MMMM", { locale: es })}
+          {lang === 'en' ? format(now, 'EEEE, MMMM d', { locale: dateLocale }) : format(now, "EEEE, d 'de' MMMM", { locale: dateLocale })}
         </h1>
         <p className={ClassNames.welcomeSub}>
-          Resumen del mes de{' '}
+          {t.dashboard.summaryFor}{' '}
           <span className={ClassNames.welcomeHighlight}>{mesActual}</span>
         </p>
       </div>
@@ -214,9 +220,9 @@ export default async function DashboardPage() {
               </span>
             )}
           </div>
-          <p className={ClassNames.statLabel}>Ingresos</p>
+          <p className={ClassNames.statLabel}>{t.dashboard.statIncome}</p>
           <p className={ClassNames.statValue}>{formatARS(totalIngresos)}</p>
-          <p className={ClassNames.statSub}>vs mes anterior</p>
+          <p className={ClassNames.statSub}>{t.dashboard.statVsLastMonth}</p>
         </div>
 
         {/* Gastos */}
@@ -232,9 +238,9 @@ export default async function DashboardPage() {
               </span>
             )}
           </div>
-          <p className={ClassNames.statLabel}>Gastos</p>
+          <p className={ClassNames.statLabel}>{t.dashboard.statExpenses}</p>
           <p className={ClassNames.statValue}>{formatARS(totalGastos)}</p>
-          <p className={ClassNames.statSub}>vs mes anterior</p>
+          <p className={ClassNames.statSub}>{t.dashboard.statVsLastMonth}</p>
         </div>
 
         {/* Balance */}
@@ -244,11 +250,11 @@ export default async function DashboardPage() {
               <Wallet className={`w-5 h-5 ${balance >= 0 ? 'text-blue-400' : 'text-orange-400'}`} />
             </div>
           </div>
-          <p className={ClassNames.statLabel}>Balance</p>
+          <p className={ClassNames.statLabel}>{t.dashboard.statBalance}</p>
           <p className={balance >= 0 ? ClassNames.statValueBalancePos : ClassNames.statValueBalanceNeg}>
             {formatARS(balance)}
           </p>
-          <p className={ClassNames.statSub}>Ingresos − Gastos</p>
+          <p className={ClassNames.statSub}>{t.dashboard.statIncomeFormula}</p>
         </div>
 
         {/* USD con blue */}
@@ -258,12 +264,12 @@ export default async function DashboardPage() {
               <DollarSign className="w-5 h-5 text-amber-400" />
             </div>
           </div>
-          <p className={ClassNames.statLabel}>USD posibles (blue)</p>
+          <p className={ClassNames.statLabel}>{t.dashboard.statUsd}</p>
           <p className={ClassNames.statValueAmber}>
-            {usdPosibles.blue !== null ? formatUSD(usdPosibles.blue) : surplus <= 0 ? 'Sin superávit' : 'N/D'}
+            {usdPosibles.blue !== null ? formatUSD(usdPosibles.blue) : surplus <= 0 ? t.dashboard.statNoSurplus : t.dashboard.statNa}
           </p>
           <p className={ClassNames.statSub}>
-            {dolarRates.blue ? `Venta: ${formatARS(dolarRates.blue.venta)}` : 'Cotización no disponible'}
+            {dolarRates.blue ? `${t.dashboard.sell} ${formatARS(dolarRates.blue.venta)}` : t.dashboard.statRateUnavailable}
           </p>
         </div>
       </div>
@@ -272,7 +278,7 @@ export default async function DashboardPage() {
       {topCategorias.length > 0 && (
         <div className={ClassNames.topCatCard}>
           <div className={ClassNames.topCatHeader}>
-            <h3 className={ClassNames.topCatTitle}>¿En qué gasto más?</h3>
+            <h3 className={ClassNames.topCatTitle}>{t.dashboard.topSpending}</h3>
             <span className={ClassNames.topCatMonth}>{mesActual}</span>
           </div>
           <div className={ClassNames.topCatGrid}>
@@ -303,7 +309,7 @@ export default async function DashboardPage() {
           </div>
           {totalGastos > 0 && (
             <div className={ClassNames.topCatFooter}>
-              <span className={ClassNames.topCatFooterLabel}>Total gastado este mes</span>
+              <span className={ClassNames.topCatFooterLabel}>{t.dashboard.totalSpent}</span>
               <span className={ClassNames.topCatFooterValue}>{formatARS(totalGastos)}</span>
             </div>
           )}
@@ -315,7 +321,7 @@ export default async function DashboardPage() {
         <div className={ClassNames.alertsCard}>
           <div className={ClassNames.alertsHeader}>
             <AlertTriangle className="w-5 h-5 text-amber-400" />
-            <h3 className={ClassNames.alertsTitle}>Señales de gasto</h3>
+            <h3 className={ClassNames.alertsTitle}>{t.dashboard.alerts}</h3>
             <span className={ClassNames.alertsMonth}>{mesActual}</span>
           </div>
           <div className={ClassNames.alertsGrid}>
@@ -327,10 +333,10 @@ export default async function DashboardPage() {
               const Icon = isSpike ? TrendingUp : isHighShare ? AlertTriangle : Sparkles
 
               const suggestion = isSpike
-                ? `Revisá si podés reducir gastos en ${alert.category}.`
+                ? t.dashboard.alertSuggestionSpike(alert.category)
                 : isHighShare
-                ? `${alert.category} consume una parte grande de tu presupuesto.`
-                : `Primera vez que gastás en ${alert.category} este mes.`
+                ? t.dashboard.alertSuggestionHighShare(alert.category)
+                : t.dashboard.alertSuggestionNew(alert.category)
 
               return (
                 <div
@@ -347,9 +353,9 @@ export default async function DashboardPage() {
                   </div>
                   <p className={isSpike ? ClassNames.alertMsgSpike : isHighShare ? ClassNames.alertMsgHighShare : ClassNames.alertMsgNew}>{alert.message}</p>
                   <div className={ClassNames.alertAmounts}>
-                    <span>Este mes: <span className="text-white font-medium">{formatARS(alert.thisMonth)}</span></span>
+                    <span>{t.dashboard.alertThisMonth} <span className="text-white font-medium">{formatARS(alert.thisMonth)}</span></span>
                     {alert.lastMonth > 0 && (
-                      <span>Anterior: <span className="text-gray-300">{formatARS(alert.lastMonth)}</span></span>
+                      <span>{t.dashboard.alertLastMonth} <span className="text-gray-300">{formatARS(alert.lastMonth)}</span></span>
                     )}
                   </div>
                   <p className={ClassNames.alertSuggestion}>{suggestion}</p>
@@ -365,24 +371,24 @@ export default async function DashboardPage() {
         {/* Recent transactions */}
         <div className={ClassNames.recentCard}>
           <div className={ClassNames.recentHeader}>
-            <h3 className={ClassNames.recentTitle}>Últimas transacciones</h3>
+            <h3 className={ClassNames.recentTitle}>{t.dashboard.recentTransactions}</h3>
             <Link
               href="/transacciones"
               className={ClassNames.recentLink}
             >
-              Ver todas
+              {t.common.viewAll}
             </Link>
           </div>
 
           {!recentTxs || recentTxs.length === 0 ? (
             <div className={ClassNames.emptyWrap}>
               <Receipt className="w-10 h-10 text-gray-600 mb-3" />
-              <p className={ClassNames.emptyText}>No hay transacciones aún</p>
+              <p className={ClassNames.emptyText}>{t.dashboard.noTransactions}</p>
               <Link
                 href="/transacciones"
                 className={ClassNames.emptyLink}
               >
-                Agregar primera transacción
+                {t.dashboard.addFirstTransaction}
               </Link>
             </div>
           ) : (
@@ -407,11 +413,11 @@ export default async function DashboardPage() {
                   </div>
                   <div className={ClassNames.txMeta}>
                     <p className={ClassNames.txDesc}>
-                      {tx.description || tx.category?.name || 'Sin descripción'}
+                      {tx.description || tx.category?.name || t.common.noDescription}
                     </p>
                     <p className={ClassNames.txSub}>
-                      {tx.category?.name ?? 'Sin categoría'} •{' '}
-                      {format(new Date(tx.date + 'T00:00:00'), 'd MMM', { locale: es })}
+                      {tx.category?.name ?? t.common.noCategory} •{' '}
+                      {format(new Date(tx.date + 'T00:00:00'), 'd MMM', { locale: dateLocale })}
                     </p>
                   </div>
                   <span className={tx.type === 'ingreso' ? ClassNames.txAmountIngreso : ClassNames.txAmountGasto}>
@@ -428,11 +434,11 @@ export default async function DashboardPage() {
         <div className={ClassNames.quickStats}>
           {/* Spending progress */}
           <div className={ClassNames.thisMonthCard}>
-            <h3 className={ClassNames.thisMonthTitle}>Este mes</h3>
+            <h3 className={ClassNames.thisMonthTitle}>{t.dashboard.thisMonth}</h3>
             <div className={ClassNames.thisMonthInner}>
               <div>
                 <div className={ClassNames.progressMeta}>
-                  <span className={ClassNames.progressLabel}>Gasto vs Ingreso</span>
+                  <span className={ClassNames.progressLabel}>{t.dashboard.expenseVsIncome}</span>
                   <span className={ClassNames.progressValue}>
                     {totalIngresos > 0
                       ? `${Math.min(Math.round((totalGastos / totalIngresos) * 100), 100)}%`
@@ -455,11 +461,11 @@ export default async function DashboardPage() {
 
               <div className={ClassNames.miniGrid}>
                 <div className={ClassNames.miniCard}>
-                  <p className={ClassNames.miniLabel}>Transacciones</p>
+                  <p className={ClassNames.miniLabel}>{t.dashboard.transactions}</p>
                   <p className={ClassNames.miniValue}>{transactions.length}</p>
                 </div>
                 <div className={ClassNames.miniCard}>
-                  <p className={ClassNames.miniLabel}>Superávit</p>
+                  <p className={ClassNames.miniLabel}>{t.dashboard.surplus}</p>
                   <p className={surplus > 0 ? ClassNames.miniSurplusPos : ClassNames.miniSurplusNeg}>
                     {formatARS(surplus)}
                   </p>
@@ -472,23 +478,23 @@ export default async function DashboardPage() {
           {dolarRates.blue && (
             <div className={ClassNames.dolarCard}>
               <div className={ClassNames.dolarHeader}>
-                <h3 className={ClassNames.dolarTitle}>Dólar blue</h3>
+                <h3 className={ClassNames.dolarTitle}>{t.dashboard.blueDollar}</h3>
                 <Link
                   href="/dolar"
                   className={ClassNames.dolarLink}
                 >
-                  Ver todo
+                  {t.common.viewAllM}
                 </Link>
               </div>
               <div className={ClassNames.dolarRow}>
                 <div>
-                  <p className={ClassNames.dolarBuyLabel}>Compra</p>
+                  <p className={ClassNames.dolarBuyLabel}>{t.dashboard.buy}</p>
                   <p className={ClassNames.dolarBuyValue}>
                     {formatARS(dolarRates.blue.compra)}
                   </p>
                 </div>
                 <div className="text-right">
-                  <p className={ClassNames.dolarSellLabel}>Venta</p>
+                  <p className={ClassNames.dolarSellLabel}>{t.dashboard.sell}</p>
                   <p className={ClassNames.dolarSellValue}>
                     {formatARS(dolarRates.blue.venta)}
                   </p>

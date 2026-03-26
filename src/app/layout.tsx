@@ -1,7 +1,10 @@
 import type { Metadata, Viewport } from 'next'
 import { Geist } from 'next/font/google'
+import { cookies } from 'next/headers'
 import './globals.css'
 import ServiceWorkerRegister from '@/components/ServiceWorkerRegister'
+import { RootProviders } from './providers'
+import { type Lang, LANG_COOKIE, DEFAULT_LANG } from '@/lib/i18n/index'
 
 const geist = Geist({
   subsets: ['latin'],
@@ -31,12 +34,17 @@ export const metadata: Metadata = {
   },
 }
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  const cookieStore = await cookies()
+  const lang = (cookieStore.get(LANG_COOKIE)?.value ?? DEFAULT_LANG) as Lang
+
   return (
-    <html lang="es" className={`${geist.variable} h-full`}>
+    <html lang={lang} className={`${geist.variable} h-full`}>
       <body className="h-full bg-gray-900 antialiased">
-        {children}
-        <ServiceWorkerRegister />
+        <RootProviders initialLang={lang}>
+          {children}
+          <ServiceWorkerRegister />
+        </RootProviders>
       </body>
     </html>
   )
