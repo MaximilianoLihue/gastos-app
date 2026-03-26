@@ -3,6 +3,7 @@
 import { DolarRate } from '@/lib/types'
 import { Minus } from 'lucide-react'
 import { S } from './dollarCard.styles'
+import { useDollarCard } from './logic/useDollarCard'
 
 interface DollarCardProps {
   title: string
@@ -12,6 +13,8 @@ interface DollarCardProps {
 }
 
 export default function DollarCard({ title, rate, highlight, badge }: DollarCardProps) {
+  const { formatPrice, spread, spreadPct, updatedAt } = useDollarCard(rate)
+
   if (!rate) {
     return (
       <div className={S.skeleton}>
@@ -21,16 +24,6 @@ export default function DollarCard({ title, rate, highlight, badge }: DollarCard
       </div>
     )
   }
-
-  const spread = rate.venta - rate.compra
-  const spreadPct = rate.compra > 0 ? ((spread / rate.compra) * 100).toFixed(1) : '0'
-
-  const formatPrice = (val: number) =>
-    new Intl.NumberFormat('es-AR', {
-      style: 'currency',
-      currency: 'ARS',
-      minimumFractionDigits: 2,
-    }).format(val)
 
   return (
     <div className={`${S.cardBase} ${highlight ? S.cardHighlight : S.cardDefault}`}>
@@ -58,16 +51,7 @@ export default function DollarCard({ title, rate, highlight, badge }: DollarCard
         </div>
       </div>
 
-      {rate.fechaActualizacion && (
-        <p className={S.updatedAt}>
-          Act: {new Date(rate.fechaActualizacion).toLocaleString('es-AR', {
-            day: '2-digit',
-            month: '2-digit',
-            hour: '2-digit',
-            minute: '2-digit',
-          })}
-        </p>
-      )}
+      {updatedAt && <p className={S.updatedAt}>Act: {updatedAt}</p>}
     </div>
   )
 }
