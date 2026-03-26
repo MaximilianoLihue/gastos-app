@@ -1,6 +1,7 @@
 'use client'
 
-import { useState, useEffect, useCallback, useRef } from 'react'
+import { useState, useEffect, useCallback, useRef, Suspense } from 'react'
+import { useSearchParams, useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { Transaction } from '@/lib/types'
 import TransactionForm from '@/components/TransactionForm'
@@ -25,6 +26,7 @@ import {
   CheckCircle,
   AlertCircle,
   Tag,
+  Camera,
 } from 'lucide-react'
 import { format, parse, isValid, startOfMonth, endOfMonth, subMonths, addMonths } from 'date-fns'
 import { es } from 'date-fns/locale'
@@ -152,8 +154,10 @@ function formatARS(value: number): string {
   }).format(value)
 }
 
-export default function TransaccionesPage() {
+function TransaccionesPageInner() {
   const supabase = createClient()
+  const searchParams = useSearchParams()
+  const router = useRouter()
   const [transactions, setTransactions] = useState<Transaction[]>([])
   const [loading, setLoading] = useState(true)
   const [showForm, setShowForm] = useState(false)
@@ -173,6 +177,11 @@ export default function TransaccionesPage() {
   const [cleanResult, setCleanResult] = useState<{ deleted: number } | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const pdfInputRef = useRef<HTMLInputElement>(null)
+  const receiptInputRef = useRef<HTMLInputElement>(null)
+  const [receiptParsing, setReceiptParsing] = useState(false)
+  const [receiptPreview, setReceiptPreview] = useState<{
+    date: string; description: string; amount: number; type: 'ingreso' | 'gasto'
+  } | null>(null)
   const [quickCatTx, setQuickCatTx] = useState<string | null>(null)
   const [savingCatTx, setSavingCatTx] = useState<string | null>(null)
   const [allCategories, setAllCategories] = useState<{ id: string; name: string; color: string; type: string }[]>([])
@@ -190,6 +199,38 @@ export default function TransaccionesPage() {
     document.addEventListener('click', close)
     return () => document.removeEventListener('click', close)
   }, [catDropdownOpen])
+
+  // Handle shared receipt from mobile share sheet
+  useEffect(() => {
+    if (searchParams.get('shared') !== '1') return
+    router.replace('/transacciones')
+
+    async function processShared() {
+      try {
+        const cache = await caches.open('shared-receipt-v1')
+        const response = await cache.match('/pending-receipt')
+        if (!response) return
+        const blob = await response.blob()
+        const fileName = response.headers.get('X-File-Name') || 'comprobante.jpg'
+        const file = new File([blob], fileName, { type: blob.type || 'image/jpeg' })
+        await cache.delete('/pending-receipt')
+
+        setReceiptParsing(true)
+        const formData = new FormData()
+        formData.append('file', file)
+        const res = await fetch('/api/parse-receipt', { method: 'POST', body: formData })
+        const json = await res.json()
+        if (!res.ok) throw new Error(json.error || 'Error al procesar el comprobante')
+        setReceiptPreview(json.transaction)
+      } catch (err) {
+        setImportResult({ total: 0, imported: 0, errors: [String(err)] })
+      } finally {
+        setReceiptParsing(false)
+      }
+    }
+
+    processShared()
+  }, [searchParams, router])
 
   const load = useCallback(async () => {
     setLoading(true)
@@ -595,6 +636,56 @@ export default function TransaccionesPage() {
     }
   }
 
+  async function handleImportReceipt(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    if (!file) return
+    e.target.value = ''
+    setReceiptParsing(true)
+    try {
+      const formData = new FormData()
+      formData.append('file', file)
+      const res = await fetch('/api/parse-receipt', { method: 'POST', body: formData })
+      const json = await res.json()
+      if (!res.ok) throw new Error(json.error || 'Error al procesar el comprobante')
+      setReceiptPreview(json.transaction)
+    } catch (err) {
+      setImportResult({ total: 0, imported: 0, errors: [String(err)] })
+    } finally {
+      setReceiptParsing(false)
+    }
+  }
+
+  async function handleConfirmReceipt() {
+    if (!receiptPreview) return
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return
+    let category_id: string | null = null
+    const guessed = guessCategory(receiptPreview.description)
+    if (guessed) {
+      const { data: existingCat } = await supabase
+        .from('categories').select('id').eq('user_id', user.id)
+        .eq('name', guessed.category).eq('type', receiptPreview.type).maybeSingle()
+      if (existingCat?.id) {
+        category_id = existingCat.id
+      } else {
+        const { data: newCat } = await supabase.from('categories')
+          .insert({ user_id: user.id, name: guessed.category, type: receiptPreview.type, color: guessed.color })
+          .select('id').single()
+        category_id = newCat?.id ?? null
+      }
+    }
+    await supabase.from('transactions').insert({
+      user_id: user.id,
+      date: receiptPreview.date,
+      type: receiptPreview.type,
+      amount: receiptPreview.amount,
+      description: receiptPreview.description,
+      category_id,
+    })
+    setReceiptPreview(null)
+    load()
+  }
+
   const totalPages = Math.ceil(total / PAGE_SIZE)
 
   return (
@@ -648,6 +739,13 @@ export default function TransaccionesPage() {
             className="hidden"
             onChange={handleImportPDF}
           />
+          <input
+            ref={receiptInputRef}
+            type="file"
+            accept="image/*"
+            className="hidden"
+            onChange={handleImportReceipt}
+          />
           <button
             onClick={handleCleanDuplicates}
             disabled={cleaning || importing}
@@ -682,6 +780,15 @@ export default function TransaccionesPage() {
           >
             <Upload className="w-4 h-4 text-red-400" />
             <span className="hidden sm:inline">{importing ? 'Importando...' : 'PDF MP'}</span>
+          </button>
+          <button
+            onClick={() => receiptInputRef.current?.click()}
+            disabled={receiptParsing}
+            className="flex items-center gap-2 px-3 py-2 rounded-xl border border-purple-600/50 text-purple-400 hover:bg-purple-500/10 text-sm transition-colors disabled:opacity-50"
+            title="Escanear comprobante con IA"
+          >
+            <Camera className="w-4 h-4" />
+            <span className="hidden sm:inline">{receiptParsing ? 'Analizando...' : 'Comprobante'}</span>
           </button>
           <button
             onClick={handleExportExcel}
@@ -1055,6 +1162,84 @@ export default function TransaccionesPage() {
         </div>
       )}
 
+      {/* Receipt preview modal */}
+      {receiptPreview && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-gray-800 border border-gray-700 rounded-2xl p-6 w-full max-w-md shadow-xl">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-white font-semibold text-lg flex items-center gap-2">
+                <Camera className="w-5 h-5 text-purple-400" />
+                Comprobante detectado
+              </h3>
+              <button onClick={() => setReceiptPreview(null)} className="text-gray-500 hover:text-white">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <div className="space-y-3 mb-5">
+              <div className="flex justify-between items-center py-2 border-b border-gray-700">
+                <span className="text-gray-400 text-sm">Fecha</span>
+                <input
+                  type="date"
+                  value={receiptPreview.date}
+                  onChange={e => setReceiptPreview(p => p ? { ...p, date: e.target.value } : p)}
+                  className="bg-gray-700 text-white text-sm rounded-lg px-2 py-1 border border-gray-600 focus:outline-none focus:border-purple-500"
+                />
+              </div>
+              <div className="flex justify-between items-center py-2 border-b border-gray-700">
+                <span className="text-gray-400 text-sm">Descripción</span>
+                <input
+                  type="text"
+                  value={receiptPreview.description}
+                  onChange={e => setReceiptPreview(p => p ? { ...p, description: e.target.value } : p)}
+                  className="bg-gray-700 text-white text-sm rounded-lg px-2 py-1 border border-gray-600 focus:outline-none focus:border-purple-500 w-48 text-right"
+                />
+              </div>
+              <div className="flex justify-between items-center py-2 border-b border-gray-700">
+                <span className="text-gray-400 text-sm">Monto</span>
+                <input
+                  type="number"
+                  value={receiptPreview.amount}
+                  onChange={e => setReceiptPreview(p => p ? { ...p, amount: Number(e.target.value) } : p)}
+                  className="bg-gray-700 text-white text-sm rounded-lg px-2 py-1 border border-gray-600 focus:outline-none focus:border-purple-500 w-32 text-right"
+                />
+              </div>
+              <div className="flex justify-between items-center py-2">
+                <span className="text-gray-400 text-sm">Tipo</span>
+                <div className="flex gap-2">
+                  {(['gasto', 'ingreso'] as const).map(t => (
+                    <button
+                      key={t}
+                      onClick={() => setReceiptPreview(p => p ? { ...p, type: t } : p)}
+                      className={`px-3 py-1 rounded-lg text-xs font-medium transition-colors ${
+                        receiptPreview.type === t
+                          ? t === 'gasto' ? 'bg-red-500/20 text-red-400 border border-red-500/40' : 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/40'
+                          : 'bg-gray-700 text-gray-400 border border-gray-600'
+                      }`}
+                    >
+                      {t === 'gasto' ? 'Gasto' : 'Ingreso'}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setReceiptPreview(null)}
+                className="flex-1 py-2.5 rounded-xl border border-gray-600 text-gray-300 hover:bg-gray-700 text-sm transition-colors"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={handleConfirmReceipt}
+                className="flex-1 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-500 text-white text-sm font-medium transition-colors"
+              >
+                Agregar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Clean duplicates result modal */}
       {cleanResult !== null && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
@@ -1088,5 +1273,13 @@ export default function TransaccionesPage() {
         </div>
       )}
     </div>
+  )
+}
+
+export default function TransaccionesPage() {
+  return (
+    <Suspense>
+      <TransaccionesPageInner />
+    </Suspense>
   )
 }
