@@ -1,6 +1,223 @@
-# GastosApp - Control de Finanzas Personales
+# GastosApp — Personal Finance Manager
 
-Aplicación web para gestionar ingresos y gastos personales, pensada para usuarios argentinos. Incluye cotización del dólar en tiempo real, reportes con gráficos, exportación a Excel/PDF y soporte para instalar como app en el celular (PWA).
+> **[English](#english) | [Español](#español)**
+
+---
+
+<a name="english"></a>
+# English
+
+A web app to manage personal income and expenses, built for Argentine users. Includes real-time dollar exchange rates, charts and reports, Excel/PDF export, receipt scanning via OCR, and PWA support (installable on mobile).
+
+## Tech Stack
+
+- **Next.js 16** (App Router + Turbopack)
+- **TypeScript**
+- **Tailwind CSS 4**
+- **Supabase** (Auth + Database + Realtime)
+- **Recharts** (Charts)
+- **jsPDF + xlsx** (Export)
+- **Tesseract.js** (OCR for receipt scanning)
+- **dolarapi.com** (Dollar rates, no API key required)
+
+## Features
+
+### Transactions
+- Create, edit, and delete transactions (income and expenses)
+- Filter by type, category, and text search
+- Pagination
+- Real-time sync via Supabase Realtime
+- Import from standard Excel template (downloadable)
+- Automatic import of Visa credit card statements (detects format, parses ARS and USD separately)
+- Export to Excel and PDF
+
+### Receipt Scanning
+- Upload a photo of a receipt and the app automatically extracts date, amount, and description via OCR (Tesseract.js)
+- Share images directly from your phone's gallery via Web Share Target (PWA)
+- Extracted data is shown in a confirmation modal before saving
+
+### Recurring Transactions
+- Define monthly recurring income and expenses (salary, rent, utilities, etc.)
+- Automatically registered on the configured day when you open the app
+- Enable/disable each one, set an expiration date, or register manually at any time
+
+### Financial Goals
+- Create savings goals in ARS or USD with name, target amount, deadline, and color
+- Progress bar per goal with peso equivalent (blue dollar) for USD goals
+- Add or subtract savings at any time
+- Global summary: total goals, total saved, and amount remaining
+
+### Auto-categorization
+- When importing receipts or statements, the app attempts to auto-assign a category based on keywords in the description (supermarkets, transport, streaming, pharmacies, etc.)
+- If the category doesn't exist, it's created automatically
+
+### Categories
+- Full CRUD with name, color, and type (income/expense)
+- Default categories created on registration
+
+### Dashboard
+- Monthly summary: income, expenses, balance, and USD equivalent
+- Blue and official dollar rate widgets
+
+### Dollar Rates
+- Real-time rates for all types: official, blue, MEP, CCL, crypto
+- Calculator showing how many dollars you can buy based on your monthly surplus
+
+### Reports
+- Bar, line, and pie charts by category
+- Period filters
+
+### Authentication
+- Sign up and log in with Supabase Auth (email + password)
+- Persistent session with SSR cookies
+- Logout from the sidebar
+
+### PWA (Progressive Web App)
+- Installable on mobile as a native-like app (no URL bar)
+- Works in standalone mode (fullscreen)
+- Share images directly from your phone to scan receipts
+
+### Language
+- Full English / Spanish support — toggle in the sidebar, preference saved in a cookie
+
+---
+
+## Setup
+
+### 1. Clone and install
+
+```bash
+git clone https://github.com/MaximilianoLihue/gastos-app.git
+cd gastos-app
+npm install
+```
+
+### 2. Create a Supabase project
+
+1. Go to [supabase.com](https://supabase.com) and create an account
+2. Create a new project
+3. Go to **Settings > API** and copy the `Project URL` and `anon public key`
+
+### 3. Configure environment variables
+
+Create `.env.local` in the project root:
+
+```env
+NEXT_PUBLIC_SUPABASE_URL=https://xxxxxxxxxxxx.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+```
+
+### 4. Create database tables
+
+1. Go to Supabase Dashboard > **SQL Editor**
+2. Create the `transactions`, `categories`, `recurring_transactions`, and `goals` tables with RLS enabled
+
+See full schema in [`DATABASE.md`](./DATABASE.md).
+
+### 5. (Optional) Enable Realtime
+
+In Supabase Dashboard > **Database > Replication**, enable `transactions` and `categories` on the `supabase_realtime` publication.
+
+### 6. Run in development
+
+```bash
+npm run dev
+```
+
+Open [http://localhost:3000](http://localhost:3000)
+
+---
+
+## Project Structure
+
+```
+src/
+  app/
+    (app)/                  # Protected routes (require auth)
+      layout.tsx            # Layout with sidebar and header
+      dashboard/            # Monthly summary
+      transacciones/        # Transaction CRUD + import
+      categorias/           # Category CRUD
+      reportes/             # Charts and reports
+      dolar/                # Dollar exchange rates
+      recurrentes/          # Automatic recurring transactions
+      metas/                # Savings goals
+    api/
+      auth/login/           # Server-side login (SSR cookies)
+      parse-receipt/        # Receipt OCR (Tesseract.js)
+      parse-pdf/            # PDF parsing
+    login/                  # Login page
+    register/               # Register page
+    share-target/           # PWA image share entry point
+  components/
+    Header/                 # Header with logout dropdown
+    Sidebar/                # Navigation sidebar + language toggle
+    TransactionForm/        # Create/edit transaction modal
+    CategoryForm/           # Create/edit category modal
+    ExpenseChart/           # Charts (Recharts)
+    DollarCard/             # Exchange rate card
+    RecurringTrigger/       # Triggers recurring processing on load
+    ServiceWorkerRegister/  # Registers the service worker (PWA)
+  lib/
+    supabase/
+      client.ts             # Supabase client for the browser
+      server.ts             # Supabase client for the server
+      middleware.ts         # Auth middleware
+    i18n/
+      index.ts              # Translation dictionaries (es/en)
+      LangContext.tsx        # React context + useLang/useT hooks
+    autoCategorize.ts       # Auto-category assignment by keywords
+    defaultCategories.ts    # Default categories on registration
+    recurring.ts            # Recurring transaction processing logic
+    dolar.ts                # Dollar rate fetching (dolarapi.com)
+    export.ts               # Excel and PDF export
+    parsePDF.ts             # PDF parsing
+    types.ts                # TypeScript types
+  proxy.ts                  # Next.js middleware (route protection)
+public/
+  sw.js                     # Service Worker (PWA + Share Target)
+  manifest.json             # PWA manifest
+  icons/                    # Icons for device installation
+```
+
+Each component and page has:
+- `*.styles.ts` — extracted Tailwind classes
+- `logic/use[Name].ts` — logic in a custom hook
+
+---
+
+## Deploy to Vercel
+
+1. Push the code to GitHub
+2. Go to [vercel.com](https://vercel.com) and create a new project
+3. Connect the repository
+4. Add environment variables:
+   - `NEXT_PUBLIC_SUPABASE_URL`
+   - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+5. Deploy
+
+---
+
+## Dollar API
+
+Uses [dolarapi.com](https://dolarapi.com) — free, no API key required.
+
+| Endpoint | Type |
+|----------|------|
+| `GET /v1/dolares` | All types |
+| `GET /v1/dolares/oficial` | Official |
+| `GET /v1/dolares/blue` | Blue |
+| `GET /v1/dolares/bolsa` | MEP |
+| `GET /v1/dolares/contadoconliqui` | CCL |
+| `GET /v1/dolares/cripto` | Crypto (USDT) |
+
+---
+---
+
+<a name="español"></a>
+# Español
+
+Aplicación web para gestionar ingresos y gastos personales, pensada para usuarios argentinos. Incluye cotización del dólar en tiempo real, reportes con gráficos, exportación a Excel/PDF, escaneo de comprobantes por OCR y soporte para instalar como app en el celular (PWA).
 
 ## Tecnologías
 
@@ -63,12 +280,15 @@ Aplicación web para gestionar ingresos y gastos personales, pensada para usuari
 ### Autenticación
 - Registro y login con Supabase Auth (email + contraseña)
 - Sesión persistente con cookies SSR
-- Logout desde el header
+- Logout desde el sidebar
 
 ### PWA (Progressive Web App)
 - Instalable en el celular como app nativa (sin barra de URL)
 - Funciona en modo standalone (pantalla completa)
 - Compartí imágenes directamente desde el celu para escanear comprobantes
+
+### Idioma
+- Soporte completo en inglés y español — toggle en el sidebar, preferencia guardada en cookie
 
 ---
 
@@ -141,7 +361,7 @@ src/
     share-target/           # Entrada de imágenes compartidas (PWA)
   components/
     Header/                 # Header con dropdown de logout
-    Sidebar/                # Barra lateral de navegación
+    Sidebar/                # Barra lateral de navegación + toggle de idioma
     TransactionForm/        # Modal crear/editar transacción
     CategoryForm/           # Modal crear/editar categoría
     ExpenseChart/           # Gráficos (Recharts)
@@ -153,6 +373,9 @@ src/
       client.ts             # Cliente Supabase para el browser
       server.ts             # Cliente Supabase para el servidor
       middleware.ts         # Middleware de autenticación
+    i18n/
+      index.ts              # Diccionarios de traducción (es/en)
+      LangContext.tsx        # Contexto React + hooks useLang/useT
     autoCategorize.ts       # Auto-asignación de categorías por keywords
     defaultCategories.ts    # Categorías predeterminadas al registrarse
     recurring.ts            # Lógica de procesamiento de recurrentes
