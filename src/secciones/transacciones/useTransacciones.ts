@@ -4,9 +4,8 @@ import { useState, useEffect, useCallback, useRef } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { Transaction } from '@/lib/types'
-import { exportToExcel, exportToPDF } from '@/lib/export'
-import { parseMercadoPagoPDF } from '@/lib/parsePDF'
-import * as XLSX from 'xlsx'
+import { exportToExcel, exportToPDF } from '@/LogicService/transacciones/exportService'
+import { parseMercadoPagoPDF } from '@/LogicService/transacciones/parseMercadoPagoClient'
 import { format, parse, isValid, startOfMonth, endOfMonth, subMonths, addMonths } from 'date-fns'
 import { useLang } from '@/lib/i18n/LangContext'
 
@@ -22,9 +21,15 @@ export interface ImportResult {
 
 function parseDate(value: unknown): string | null {
   if (!value) return null
-  if (typeof value === 'number') {
-    const date = XLSX.SSF.parse_date_code(value)
-    if (date) return `${date.y}-${String(date.m).padStart(2, '0')}-${String(date.d).padStart(2, '0')}`
+  // ExcelJS returns Date objects for date-formatted cells
+  if (value instanceof Date) {
+    if (isValid(value)) return format(value, 'yyyy-MM-dd')
+    return null
+  }
+  // Excel serial date number (e.g. 45000 = a date in 2023)
+  if (typeof value === 'number' && value > 32874 && value < 73050) {
+    const utc = new Date(Date.UTC(1899, 11, 30) + value * 86400000)
+    if (isValid(utc)) return format(utc, 'yyyy-MM-dd')
   }
   const str = String(value).trim()
   for (const fmt of ['dd/MM/yyyy', 'yyyy-MM-dd', 'MM/dd/yyyy', 'd/M/yyyy']) {
@@ -59,7 +64,7 @@ interface VisaRow {
   currency: 'ARS' | 'USD'
 }
 
-function detectVisaStatement(rows: string[][]): boolean {
+function detectVisaStatement(rows: unknown[][]): boolean {
   return rows.slice(0, 5).some(r =>
     String(r[0]).toLowerCase().includes('movimientos del resumen') ||
     String(r[0]).toLowerCase().includes('visa crédito') ||
@@ -67,7 +72,7 @@ function detectVisaStatement(rows: string[][]): boolean {
   )
 }
 
-function parseVisaStatement(rows: string[][]): VisaRow[] {
+function parseVisaStatement(rows: unknown[][]): VisaRow[] {
   const results: VisaRow[] = []
   const skipSections = ['pago de tarjeta', 'otros conceptos']
   const skipDescriptions = ['su pago en pesos', 'su pago en usd', 'total de visa', 'total de tarjeta']
@@ -138,17 +143,29 @@ function parseType(value: unknown): 'ingreso' | 'gasto' | null {
 }
 
 export function downloadTemplate() {
-  const wb = XLSX.utils.book_new()
-  const data = [
-    ['fecha', 'tipo', 'monto', 'descripcion', 'categoria'],
-    ['15/03/2025', 'gasto', 5000, 'Supermercado', 'Comida'],
-    ['16/03/2025', 'ingreso', 150000, 'Sueldo', 'Trabajo'],
-    ['17/03/2025', 'gasto', 2000, 'Nafta', 'Transporte'],
-  ]
-  const ws = XLSX.utils.aoa_to_sheet(data)
-  ws['!cols'] = [{ wch: 14 }, { wch: 10 }, { wch: 12 }, { wch: 25 }, { wch: 20 }]
-  XLSX.utils.book_append_sheet(wb, ws, 'Transacciones')
-  XLSX.writeFile(wb, 'plantilla-gastos.xlsx')
+  ;(async () => {
+    const ExcelJS = (await import('exceljs')).default
+    const workbook = new ExcelJS.Workbook()
+    const ws = workbook.addWorksheet('Transacciones')
+    ws.columns = [
+      { header: 'fecha', width: 14 },
+      { header: 'tipo', width: 10 },
+      { header: 'monto', width: 12 },
+      { header: 'descripcion', width: 25 },
+      { header: 'categoria', width: 20 },
+    ]
+    ws.addRow(['15/03/2025', 'gasto', 5000, 'Supermercado', 'Comida'])
+    ws.addRow(['16/03/2025', 'ingreso', 150000, 'Sueldo', 'Trabajo'])
+    ws.addRow(['17/03/2025', 'gasto', 2000, 'Nafta', 'Transporte'])
+    const buf = await workbook.xlsx.writeBuffer()
+    const blob = new Blob([buf], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = 'plantilla-gastos.xlsx'
+    a.click()
+    URL.revokeObjectURL(url)
+  })()
 }
 
 function txKey(date: string, description: string | null, type: string, amount: number): string {
@@ -237,6 +254,54 @@ export function useTransacciones() {
     return () => document.removeEventListener('click', close)
   }, [catDropdownOpen])
 
+  // ── Core PDF import logic (used by input handler and share target) ───────────
+  async function importPDFFile(file: File) {
+    setImporting(true)
+    setImportResult(null)
+    try {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) return
+      const parsed = await parseMercadoPagoPDF(file)
+      const result: ImportResult = { total: parsed.length, imported: 0, errors: [] }
+      if (parsed.length === 0) {
+        result.errors.push(t.transactions.errorNoPdfTxs)
+        setImportResult(result)
+        return
+      }
+      const { data: existingCats } = await supabase.from('categories').select('id, name, type').eq('user_id', user.id)
+      const catCache: Record<string, string> = {}
+      for (const c of existingCats ?? []) catCache[`${c.name.toLowerCase()}__${c.type}`] = c.id
+      const ensureCategory = async (name: string, type: 'ingreso' | 'gasto', color: string): Promise<string> => {
+        const key = `${name.toLowerCase()}__${type}`
+        if (catCache[key]) return catCache[key]
+        const { data } = await supabase.from('categories').insert({ user_id: user.id, name, type, color }).select('id').single()
+        if (data?.id) catCache[key] = data.id
+        return data?.id ?? ''
+      }
+      const toInsert: object[] = []
+      for (const tx of parsed) {
+        let category_id: string | null = null
+        const guessed = guessCategory(tx.description)
+        if (guessed) category_id = await ensureCategory(guessed.category, tx.type, guessed.color) || null
+        toInsert.push({ user_id: user.id, date: tx.date, type: tx.type, amount: tx.amount, description: tx.description, category_id })
+      }
+      const dupIndexes = new Set(await filterDuplicates(supabase, toInsert as { date: string; description: string | null; type: string; amount: number }[]))
+      const unique = toInsert.filter((_, i) => !dupIndexes.has(i))
+      const skipped = toInsert.length - unique.length
+      if (skipped > 0) result.errors.push(t.transactions.errorDuplicatesSkipped(skipped))
+      if (unique.length > 0) {
+        const { error } = await supabase.from('transactions').insert(unique)
+        if (error) result.errors.push(t.transactions.errorSave(error.message))
+        else { result.imported = unique.length; load() }
+      }
+      setImportResult(result)
+    } catch (err) {
+      setImportResult({ total: 0, imported: 0, errors: [t.transactions.errorReadPdf(String(err))] })
+    } finally {
+      setImporting(false)
+    }
+  }
+
   // Handle shared receipt from mobile share sheet
   useEffect(() => {
     if (searchParams.get('shared') !== '1') return
@@ -249,15 +314,21 @@ export function useTransacciones() {
         if (!response) return
         const blob = await response.blob()
         const fileName = response.headers.get('X-File-Name') || 'comprobante.jpg'
-        const file = new File([blob], fileName, { type: blob.type || 'image/jpeg' })
+        const contentType = blob.type || response.headers.get('Content-Type') || 'image/jpeg'
+        const file = new File([blob], fileName, { type: contentType })
         await cache.delete('/pending-receipt')
-        setReceiptParsing(true)
-        const formData = new FormData()
-        formData.append('file', file)
-        const res = await fetch('/api/parse-receipt', { method: 'POST', body: formData })
-        const json = await res.json()
-        if (!res.ok) throw new Error(json.error || t.transactions.errorProcessReceipt)
-        setReceiptPreview(json.transaction)
+
+        if (contentType === 'application/pdf') {
+          await importPDFFile(file)
+        } else {
+          setReceiptParsing(true)
+          const formData = new FormData()
+          formData.append('file', file)
+          const res = await fetch('/api/parse-receipt', { method: 'POST', body: formData })
+          const json = await res.json()
+          if (!res.ok) throw new Error(json.error || t.transactions.errorProcessReceipt)
+          setReceiptPreview(json.transaction)
+        }
       } catch (err) {
         setImportResult({ total: 0, imported: 0, errors: [String(err)] })
       } finally {
@@ -365,9 +436,25 @@ export function useTransacciones() {
       if (!user) return
 
       const buffer = await file.arrayBuffer()
-      const wb = XLSX.read(buffer, { type: 'array', cellDates: false })
-      const ws = wb.Sheets[wb.SheetNames[0]]
-      const allRows = XLSX.utils.sheet_to_json<unknown[]>(ws, { header: 1, defval: '' }) as string[][]
+      const ExcelJS = (await import('exceljs')).default
+      const workbook = new ExcelJS.Workbook()
+      await workbook.xlsx.load(buffer)
+      const ws = workbook.worksheets[0]
+      const allRows: unknown[][] = []
+      ws.eachRow({ includeEmpty: false }, (row) => {
+        const vals = (row.values as unknown[]).slice(1) // exceljs is 1-indexed
+        allRows.push(vals.map(v => {
+          if (v === null || v === undefined) return ''
+          if (v instanceof Date) return v
+          if (typeof v === 'object') {
+            if ('richText' in v) return (v as { richText: { text: string }[] }).richText.map(rt => rt.text).join('')
+            if ('text' in v) return (v as { text: string }).text
+            if ('result' in v) return (v as { result: unknown }).result ?? ''
+            return ''
+          }
+          return v
+        }))
+      })
 
       const result: ImportResult = { total: 0, imported: 0, errors: [] }
       const toInsert: object[] = []
@@ -530,56 +617,7 @@ export function useTransacciones() {
     const file = e.target.files?.[0]
     if (!file) return
     e.target.value = ''
-    setImporting(true)
-    setImportResult(null)
-
-    try {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) return
-      const parsed = await parseMercadoPagoPDF(file)
-      const result: ImportResult = { total: parsed.length, imported: 0, errors: [] }
-
-      if (parsed.length === 0) {
-        result.errors.push(t.transactions.errorNoPdfTxs)
-        setImportResult(result)
-        return
-      }
-
-      const { data: existingCats } = await supabase.from('categories').select('id, name, type').eq('user_id', user.id)
-      const catCache: Record<string, string> = {}
-      for (const c of existingCats ?? []) catCache[`${c.name.toLowerCase()}__${c.type}`] = c.id
-
-      const ensureCategory = async (name: string, type: 'ingreso' | 'gasto', color: string): Promise<string> => {
-        const key = `${name.toLowerCase()}__${type}`
-        if (catCache[key]) return catCache[key]
-        const { data } = await supabase.from('categories').insert({ user_id: user.id, name, type, color }).select('id').single()
-        if (data?.id) catCache[key] = data.id
-        return data?.id ?? ''
-      }
-
-      const toInsert: object[] = []
-      for (const tx of parsed) {
-        let category_id: string | null = null
-        const guessed = guessCategory(tx.description)
-        if (guessed) category_id = await ensureCategory(guessed.category, tx.type, guessed.color) || null
-        toInsert.push({ user_id: user.id, date: tx.date, type: tx.type, amount: tx.amount, description: tx.description, category_id })
-      }
-
-      const dupIndexes = new Set(await filterDuplicates(supabase, toInsert as { date: string; description: string | null; type: string; amount: number }[]))
-      const unique = toInsert.filter((_, i) => !dupIndexes.has(i))
-      const skipped = toInsert.length - unique.length
-      if (skipped > 0) result.errors.push(t.transactions.errorDuplicatesSkipped(skipped))
-      if (unique.length > 0) {
-        const { error } = await supabase.from('transactions').insert(unique)
-        if (error) result.errors.push(t.transactions.errorSave(error.message))
-        else { result.imported = unique.length; load() }
-      }
-      setImportResult(result)
-    } catch (err) {
-      setImportResult({ total: 0, imported: 0, errors: [t.transactions.errorReadPdf(String(err))] })
-    } finally {
-      setImporting(false)
-    }
+    await importPDFFile(file)
   }
 
   async function handleCleanDuplicates() {

@@ -1,5 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
-import { fetchAllDolarRates, calcularUSDPosibles } from '@/lib/dolar'
+import { fetchAllDolarRates, calcularUSDPosibles } from '@/LogicService/dolar/dolarService'
 import DollarCard from '@/components/DollarCard'
 import { DollarSign, RefreshCw, TrendingUp, Info } from 'lucide-react'
 import { format, startOfMonth, endOfMonth } from 'date-fns'

@@ -1,5 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
-import { fetchAllDolarRates, calcularUSDPosibles } from '@/lib/dolar'
+import { fetchAllDolarRates, calcularUSDPosibles } from '@/LogicService/dolar/dolarService'
 import { Transaction, DashboardStats } from '@/lib/types'
 import { format, startOfMonth, endOfMonth, subMonths } from 'date-fns'
 import { es, enUS } from 'date-fns/locale'

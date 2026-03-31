@@ -1,8 +1,8 @@
 import { useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { processRecurring } from '@/lib/recurring'
-import { seedDefaultCategories } from '@/lib/defaultCategories'
-import { autoCategorizeExisting } from '@/lib/autoCategorize'
+import { processRecurring } from '@/LogicService/recurrentes/recurringService'
+import { seedDefaultCategories } from '@/LogicService/categorias/defaultCategoriesService'
+import { autoCategorizeExisting } from '@/LogicService/transacciones/autoCategorizeService'
 
 export function useRecurringTrigger() {
   useEffect(() => {

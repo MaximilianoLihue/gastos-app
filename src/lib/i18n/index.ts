@@ -48,6 +48,7 @@ const es = {
     goals: 'Metas',
     categories: 'Categorías',
     reports: 'Reportes',
+    trends: 'Tendencias',
     dollar: 'Dólar',
     signOut: 'Cerrar sesión',
     openMenu: 'Abrir menú',
@@ -181,6 +182,10 @@ const es = {
     errorInvalidAmount: (row: number) => `Fila ${row}: monto inválido`,
     errorMissingColumns: 'Columnas requeridas no encontradas: fecha, tipo, monto',
     errorProcessReceipt: 'Error al procesar el comprobante',
+    shareTooltip: 'Compartir comprobante',
+    shareCopied: 'Copiado al portapapeles',
+    shareText: (type: string, desc: string, amount: string, cat: string, date: string) =>
+      `🧾 ${type}\n📝 ${desc}\n💰 ${amount}\n📂 ${cat}\n📅 ${date}\n\nGastosApp`,
   },
 
   // ─── Categories page ───────────────────────────────────
@@ -297,6 +302,35 @@ const es = {
     footnote: 'Cálculo informativo: Superávit ÷ precio de venta. Las operaciones en dólar blue son informales. El cupo oficial es de USD 200 mensuales.',
   },
 
+  // ─── Tendencias page ───────────────────────────────────
+  tendencias: {
+    title: 'Tendencias',
+    sub: 'Movimientos de tus gastos y contexto inflacionario',
+    comparing: (prev: string, curr: string) => `Comparando ${prev} vs ${curr}`,
+    yourExpenses: 'Tus gastos este mes',
+    vsLastMonth: 'vs mes anterior',
+    prevMonth: 'Mes anterior',
+    lastInflacion: 'Inflación último mes',
+    indecSource: 'Fuente: INDEC vía ArgentinaDatos',
+    inflacionError: 'No disponible',
+    vsInflacion: 'Tus gastos vs Inflación',
+    above: 'Por encima',
+    below: 'Por debajo',
+    aboveDetail: (txPct: string, infPct: string) => `${txPct} tus gastos · Inflación ${infPct}`,
+    belowDetail: (txPct: string, infPct: string) => `${txPct} tus gastos · Inflación ${infPct}`,
+    wentUp: 'Subieron más',
+    wentDown: 'Bajaron más',
+    noDataUp: 'Sin categorías que subieron este mes',
+    noDataDown: 'Sin categorías que bajaron este mes',
+    inflacionTitle: 'Inflación mensual argentina',
+    inflacionSub: 'Últimos 12 meses · IPC INDEC',
+    lastMonth: 'Último mes',
+    accumulated12: 'Acumulado 12 meses',
+    inflacionFetchError: 'No se pudo cargar la inflación. Verificá tu conexión.',
+    viewChart: 'Ver gráfico',
+    viewList: 'Ver lista',
+  },
+
   // ─── TransactionForm ───────────────────────────────────
   transactionForm: {
     titleNew: 'Nueva transacción',
@@ -355,6 +389,7 @@ const en: Translations = {
     goals: 'Goals',
     categories: 'Categories',
     reports: 'Reports',
+    trends: 'Trends',
     dollar: 'Dollar',
     signOut: 'Sign out',
     openMenu: 'Open menu',
@@ -485,6 +520,10 @@ const en: Translations = {
     errorInvalidAmount: (row: number) => `Row ${row}: invalid amount`,
     errorMissingColumns: 'Required columns not found: fecha, tipo, monto',
     errorProcessReceipt: 'Error processing receipt',
+    shareTooltip: 'Share receipt',
+    shareCopied: 'Copied to clipboard',
+    shareText: (type: string, desc: string, amount: string, cat: string, date: string) =>
+      `🧾 ${type}\n📝 ${desc}\n💰 ${amount}\n📂 ${cat}\n📅 ${date}\n\nGastosApp`,
   },
 
   categories: {
@@ -594,6 +633,34 @@ const en: Translations = {
     rateCcl: 'Cash with Settlement',
     rateCripto: 'Crypto Dollar',
     footnote: 'Informational calculation: Surplus ÷ sell price. Blue dollar transactions are informal. The official limit is USD 200 per month.',
+  },
+
+  tendencias: {
+    title: 'Trends',
+    sub: 'Expense movements and inflation context',
+    comparing: (prev: string, curr: string) => `Comparing ${prev} vs ${curr}`,
+    yourExpenses: 'Your expenses this month',
+    vsLastMonth: 'vs last month',
+    prevMonth: 'Previous month',
+    lastInflacion: 'Last month inflation',
+    indecSource: 'Source: INDEC via ArgentinaDatos',
+    inflacionError: 'Unavailable',
+    vsInflacion: 'Your expenses vs Inflation',
+    above: 'Above inflation',
+    below: 'Below inflation',
+    aboveDetail: (txPct: string, infPct: string) => `${txPct} your expenses · Inflation ${infPct}`,
+    belowDetail: (txPct: string, infPct: string) => `${txPct} your expenses · Inflation ${infPct}`,
+    wentUp: 'Went up most',
+    wentDown: 'Went down most',
+    noDataUp: 'No categories went up this month',
+    noDataDown: 'No categories went down this month',
+    inflacionTitle: 'Argentina monthly inflation',
+    inflacionSub: 'Last 12 months · CPI INDEC',
+    lastMonth: 'Last month',
+    accumulated12: '12-month accumulated',
+    inflacionFetchError: 'Could not load inflation data. Check your connection.',
+    viewChart: 'View chart',
+    viewList: 'View list',
   },
 
   transactionForm: {

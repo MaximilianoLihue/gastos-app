@@ -1,11 +1,12 @@
 'use client'
 
+import { useState } from 'react'
 import { Transaction } from '@/lib/types'
 import TransactionForm from '@/components/TransactionForm'
 import {
   Plus, Search, Filter, Pencil, Trash2,
   FileSpreadsheet, FileText, ChevronLeft, ChevronRight, ChevronDown,
-  ArrowUpDown, Upload, Download, X, CheckCircle, AlertCircle, Tag, Camera,
+  ArrowUpDown, Upload, Download, X, CheckCircle, AlertCircle, Tag, Camera, Share2,
 } from 'lucide-react'
 import { format, addMonths, startOfMonth, subMonths } from 'date-fns'
 import { es, enUS } from 'date-fns/locale'
@@ -28,6 +29,24 @@ function formatAmount(value: number, currency: 'ARS' | 'USD' = 'ARS'): string {
 export function TransaccionesSection() {
   const { t, lang } = useLang()
   const dateLocale = lang === 'en' ? enUS : es
+  const [shareToast, setShareToast] = useState(false)
+
+  async function handleShare(tx: Transaction) {
+    const typeLabel = tx.type === 'ingreso' ? t.common.income : t.common.expense
+    const sign = tx.type === 'ingreso' ? '+' : '-'
+    const amountStr = `${sign}${formatAmount(Number(tx.amount), tx.currency ?? 'ARS')} ${tx.currency ?? 'ARS'}`
+    const catName = tx.category?.name ?? t.common.noCategory
+    const dateStr = format(new Date(tx.date + 'T00:00:00'), 'dd/MM/yyyy', { locale: dateLocale })
+    const desc = tx.description || t.common.noDescription
+    const text = t.transactions.shareText(typeLabel, desc, amountStr, catName, dateStr)
+    if (typeof navigator !== 'undefined' && navigator.share) {
+      try { await navigator.share({ text }) } catch {}
+    } else {
+      await navigator.clipboard.writeText(text)
+      setShareToast(true)
+      setTimeout(() => setShareToast(false), 2000)
+    }
+  }
 
   const {
     transactions,
@@ -301,6 +320,7 @@ export function TransaccionesSection() {
                     </td>
                     <td className={ClassNames.tdActions}>
                       <div className={ClassNames.actionsWrap}>
+                        <button onClick={() => handleShare(tx)} className={ClassNames.shareBtn} title={t.transactions.shareTooltip}><Share2 className="w-3.5 h-3.5" /></button>
                         <button onClick={() => handleEdit(tx)} className={ClassNames.editBtn} title={t.common.edit}><Pencil className="w-3.5 h-3.5" /></button>
                         {deleteConfirm === tx.id ? (
                           <div className={ClassNames.deleteConfirmWrap}>
@@ -423,6 +443,12 @@ export function TransaccionesSection() {
               </button>
             </div>
           </div>
+        </div>
+      )}
+
+      {shareToast && (
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 px-4 py-2.5 rounded-xl bg-gray-800 border border-gray-700 text-emerald-400 text-sm font-medium shadow-xl animate-fade-in flex items-center gap-2">
+          <CheckCircle className="w-4 h-4" />{t.transactions.shareCopied}
         </div>
       )}
 

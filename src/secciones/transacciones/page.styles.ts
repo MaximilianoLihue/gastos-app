@@ -77,6 +77,7 @@ export const ClassNames = {
   amountGasto: "font-semibold text-sm text-red-400",
   tdActions: "px-4 py-3",
   actionsWrap: "flex items-center justify-end gap-1",
+  shareBtn: "p-1.5 rounded-lg text-gray-500 hover:text-emerald-400 hover:bg-emerald-500/10 transition-colors",
   editBtn: "p-1.5 rounded-lg text-gray-500 hover:text-blue-400 hover:bg-blue-500/10 transition-colors",
   deleteConfirmWrap: "flex items-center gap-1",
   deleteConfirmYes: "px-2 py-1 rounded-md text-xs bg-red-500/20 text-red-400 hover:bg-red-500/30 transition-colors",

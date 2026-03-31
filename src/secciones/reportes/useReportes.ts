@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { Transaction, MonthlyData, CategoryData } from '@/lib/types'
-import { exportToExcel, exportToPDF } from '@/lib/export'
+import { exportToExcel, exportToPDF } from '@/LogicService/transacciones/exportService'
 import { format, subMonths, startOfMonth, endOfMonth } from 'date-fns'
 import { es, enUS } from 'date-fns/locale'
 import { useLang } from '@/lib/i18n/LangContext'

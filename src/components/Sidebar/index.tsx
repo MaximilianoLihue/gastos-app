@@ -15,6 +15,7 @@ import {
   RefreshCw,
   Target,
   Languages,
+  Activity,
 } from 'lucide-react'
 import { ClassNames } from './sidebar.styles'
 import { useSidebar } from './logic/useSidebar'
@@ -36,6 +37,7 @@ export default function Sidebar({ userEmail }: SidebarProps) {
     { href: '/metas', label: t.sidebar.goals, icon: Target },
     { href: '/categorias', label: t.sidebar.categories, icon: Tag },
     { href: '/reportes', label: t.sidebar.reports, icon: BarChart3 },
+    { href: '/tendencias', label: t.sidebar.trends, icon: Activity },
     { href: '/dolar', label: t.sidebar.dollar, icon: DollarSign },
   ]
 

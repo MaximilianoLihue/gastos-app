@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { loginWithPassword } from '@/LogicService/authService'
+import { loginWithPassword } from '@/LogicService/auth/authService'
 
 export async function POST(req: NextRequest) {
   const { email, password } = await req.json()

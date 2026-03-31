@@ -1,4 +1,4 @@
-import { Transaction, Category } from './types'
+import { Transaction, Category } from '@/lib/types'
 import { format } from 'date-fns'
 import { es } from 'date-fns/locale'
 
@@ -6,31 +6,35 @@ export function exportToExcel(
   transactions: Transaction[],
   filename: string = 'transacciones'
 ): void {
-  // Dynamic import to avoid SSR issues
-  import('xlsx').then((XLSX) => {
-    const data = transactions.map((t) => ({
-      Fecha: format(new Date(t.date), 'dd/MM/yyyy', { locale: es }),
-      Tipo: t.type === 'ingreso' ? 'Ingreso' : 'Gasto',
-      Categoría: t.category?.name || 'Sin categoría',
-      Descripción: t.description || '',
-      Monto: t.type === 'ingreso' ? t.amount : -t.amount,
-    }))
-
-    const ws = XLSX.utils.json_to_sheet(data)
-    const wb = XLSX.utils.book_new()
-    XLSX.utils.book_append_sheet(wb, ws, 'Transacciones')
-
-    // Set column widths
-    ws['!cols'] = [
-      { wch: 12 },
-      { wch: 10 },
-      { wch: 20 },
-      { wch: 30 },
-      { wch: 15 },
+  ;(async () => {
+    const ExcelJS = (await import('exceljs')).default
+    const workbook = new ExcelJS.Workbook()
+    const ws = workbook.addWorksheet('Transacciones')
+    ws.columns = [
+      { header: 'Fecha', key: 'fecha', width: 12 },
+      { header: 'Tipo', key: 'tipo', width: 10 },
+      { header: 'Categoría', key: 'categoria', width: 20 },
+      { header: 'Descripción', key: 'descripcion', width: 30 },
+      { header: 'Monto', key: 'monto', width: 15 },
     ]
-
-    XLSX.writeFile(wb, `${filename}_${format(new Date(), 'yyyy-MM-dd')}.xlsx`)
-  })
+    for (const t of transactions) {
+      ws.addRow({
+        fecha: format(new Date(t.date), 'dd/MM/yyyy', { locale: es }),
+        tipo: t.type === 'ingreso' ? 'Ingreso' : 'Gasto',
+        categoria: t.category?.name || 'Sin categoría',
+        descripcion: t.description || '',
+        monto: t.type === 'ingreso' ? Number(t.amount) : -Number(t.amount),
+      })
+    }
+    const buf = await workbook.xlsx.writeBuffer()
+    const blob = new Blob([buf], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `${filename}_${format(new Date(), 'yyyy-MM-dd')}.xlsx`
+    a.click()
+    URL.revokeObjectURL(url)
+  })()
 }
 
 export async function exportToPDF(

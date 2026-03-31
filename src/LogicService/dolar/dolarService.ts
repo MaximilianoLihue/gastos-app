@@ -1,4 +1,4 @@
-import { DolarRate, DolarSummary } from './types'
+import { DolarRate, DolarSummary } from '@/lib/types'
 
 const BASE_URL = 'https://dolarapi.com/v1'
 

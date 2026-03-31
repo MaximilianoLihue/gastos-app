@@ -1,0 +1,23 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(xargs grep:*)",
+      "Bash(npx tsc:*)",
+      "Bash(npm audit:*)",
+      "Bash(grep -r \"file.*type\\\\|mime\\\\|MIME\\\\|\\\\.size\\\\|maxSize\" /c/Users/tropus/Desktop/Idea/gastos-app/src --include=*.ts --include=*.tsx)",
+      "Bash(xargs head:*)",
+      "Bash(grep -r \"updateSession\\\\|middleware\" /c/Users/tropus/Desktop/Idea/gastos-app/src --include=*.ts --include=*.tsx)",
+      "Bash(grep -r \"String\\(err\\)\\\\|String\\(error\\)\" /c/Users/tropus/Desktop/Idea/gastos-app/src --include=*.ts --include=*.tsx)",
+      "Bash(find /c/Users/tropus/Desktop/Idea/gastos-app -name middleware.* -o -name proxy.*)",
+      "Bash(grep -r \"api_key\\\\|apiKey\\\\|API_KEY\\\\|secret\\\\|SECRET\\\\|password\\\\|PASSWORD\\\\|token\\\\|TOKEN\" /c/Users/tropus/Desktop/Idea/gastos-app/src --include=*.ts --include=*.tsx)",
+      "Bash(grep -r \"\\\\.query\\\\|\\\\.raw\\\\|SQL\\\\|sql\\\\`\" /c/Users/tropus/Desktop/Idea/gastos-app/src --include=*.ts --include=*.tsx)",
+      "Bash(npm uninstall:*)",
+      "Bash(npm install:*)",
+      "Bash(sed -i \"s|from ''@/lib/defaultCategories''|from ''@/LogicService/categorias/defaultCategoriesService''|g\" \"C:\\\\Users\\\\tropus\\\\Desktop\\\\Idea\\\\gastos-app\\\\src\\\\secciones\\\\register\\\\useRegister.ts\")",
+      "Bash(sed -i \"s|from ''@/lib/dolar''|from ''@/LogicService/dolar/dolarService''|g\" \"C:\\\\Users\\\\tropus\\\\Desktop\\\\Idea\\\\gastos-app\\\\src\\\\secciones\\\\dolar\\\\DolarSection.tsx\")",
+      "Bash(sed -i \"s|from ''@/lib/dolar''|from ''@/LogicService/dolar/dolarService''|g\" \"C:\\\\Users\\\\tropus\\\\Desktop\\\\Idea\\\\gastos-app\\\\src\\\\secciones\\\\dashboard\\\\DashboardSection.tsx\")",
+      "Bash(sed -i \"s|from ''./types''|from ''@/lib/types''|g\" \"C:\\\\Users\\\\tropus\\\\Desktop\\\\Idea\\\\gastos-app\\\\src\\\\LogicService\\\\dolar\\\\dolarService.ts\")",
+      "Bash(sed -i \"s|from ''./types''|from ''@/lib/types''|g\" \"C:\\\\Users\\\\tropus\\\\Desktop\\\\Idea\\\\gastos-app\\\\src\\\\LogicService\\\\transacciones\\\\exportService.ts\")"
+    ]
+  }
+}

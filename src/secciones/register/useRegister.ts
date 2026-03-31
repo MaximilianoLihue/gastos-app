@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
-import { seedDefaultCategories } from '@/lib/defaultCategories'
+import { seedDefaultCategories } from '@/LogicService/categorias/defaultCategoriesService'
 import { useT } from '@/lib/i18n/LangContext'
 
 export function useRegister() {
