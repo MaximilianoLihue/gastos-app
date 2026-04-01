@@ -17,7 +17,27 @@
       "Bash(sed -i \"s|from ''@/lib/dolar''|from ''@/LogicService/dolar/dolarService''|g\" \"C:\\\\Users\\\\tropus\\\\Desktop\\\\Idea\\\\gastos-app\\\\src\\\\secciones\\\\dolar\\\\DolarSection.tsx\")",
       "Bash(sed -i \"s|from ''@/lib/dolar''|from ''@/LogicService/dolar/dolarService''|g\" \"C:\\\\Users\\\\tropus\\\\Desktop\\\\Idea\\\\gastos-app\\\\src\\\\secciones\\\\dashboard\\\\DashboardSection.tsx\")",
       "Bash(sed -i \"s|from ''./types''|from ''@/lib/types''|g\" \"C:\\\\Users\\\\tropus\\\\Desktop\\\\Idea\\\\gastos-app\\\\src\\\\LogicService\\\\dolar\\\\dolarService.ts\")",
-      "Bash(sed -i \"s|from ''./types''|from ''@/lib/types''|g\" \"C:\\\\Users\\\\tropus\\\\Desktop\\\\Idea\\\\gastos-app\\\\src\\\\LogicService\\\\transacciones\\\\exportService.ts\")"
+      "Bash(sed -i \"s|from ''./types''|from ''@/lib/types''|g\" \"C:\\\\Users\\\\tropus\\\\Desktop\\\\Idea\\\\gastos-app\\\\src\\\\LogicService\\\\transacciones\\\\exportService.ts\")",
+      "Bash(npm ls:*)",
+      "Bash(find /c/Users/maxid/Downloads/gastosapp/gastos-app -type f -name *dashboard* -o -name *Dashboard*)",
+      "Bash(ls:*)",
+      "Bash(node -e \"console.log\\(require\\(''./node_modules/next/package.json''\\).version\\)\")",
+      "Bash(/tmp/tree.txt:*)",
+      "Read(//tmp/**)",
+      "Bash(cd:*)",
+      "Bash(mv src/secciones/* src/components/secciones/)",
+      "Bash(rmdir src/secciones)",
+      "Bash(for dir:*)",
+      "Bash(do mv:*)",
+      "Bash(echo \"moved $dir\")",
+      "Bash(done)",
+      "Bash(xargs sed:*)",
+      "Bash(grep -rn \"from ''\\\\./use\\\\|from ''\\\\./logic/use\" src --include=\"*.ts\" --include=\"*.tsx\")",
+      "Bash(mv src/components/secciones/categorias/useCategorias.ts src/LogicService/secciones/categorias/)",
+      "Bash(mv src/components/secciones/login/useLogin.ts src/LogicService/secciones/login/)",
+      "Bash(mv src/components/secciones/metas/useMetas.ts src/LogicService/secciones/metas/)",
+      "Bash(mv src/components/secciones/recurrentes/useRecurrentes.ts src/LogicService/secciones/recurrentes/)",
+      "Bash(mv src/components/secciones/register/useRegister.ts src/LogicService/secciones/register/)"
     ]
   }
 }

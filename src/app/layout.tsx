@@ -2,7 +2,7 @@ import type { Metadata, Viewport } from 'next'
 import { Geist } from 'next/font/google'
 import { cookies } from 'next/headers'
 import './globals.css'
-import ServiceWorkerRegister from '@/components/ServiceWorkerRegister'
+import ServiceWorkerRegister from '@/components/ui/ServiceWorkerRegister'
 import { RootProviders } from './providers'
 import { type Lang, LANG_COOKIE, DEFAULT_LANG } from '@/lib/i18n/index'
 

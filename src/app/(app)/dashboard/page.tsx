@@ -1,5 +1,10 @@
-import { DashboardSection } from '@/secciones/dashboard/DashboardSection'
+import { DashboardSection } from '@/components/secciones/dashboard/DashboardSection'
 
-export default function DashboardPage() {
-  return <DashboardSection />
+export default async function DashboardPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ month?: string }>
+}) {
+  const { month } = await searchParams
+  return <DashboardSection month={month} />
 }

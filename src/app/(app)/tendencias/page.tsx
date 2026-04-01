@@ -1,4 +1,4 @@
-import { TendenciasSection } from '@/secciones/tendencias/TendenciasSection'
+import { TendenciasSection } from '@/components/secciones/tendencias/TendenciasSection'
 
 export default function TendenciasPage() {
   return <TendenciasSection />

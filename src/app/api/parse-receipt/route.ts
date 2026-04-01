@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { parseReceiptImage } from '@/LogicService/transacciones/parseReceiptService'
+import { parseReceiptImage } from '@/LogicService/secciones/transacciones/parseReceiptService'
 
 const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'image/heic', 'image/heif']
 const MAX_SIZE = 8 * 1024 * 1024 // 8 MB

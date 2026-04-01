@@ -1,8 +1,8 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
-import Sidebar from '@/components/Sidebar'
-import Header from '@/components/Header'
-import RecurringTrigger from '@/components/RecurringTrigger'
+import Sidebar from '@/components/ui/Sidebar'
+import Header from '@/components/ui/Header'
+import RecurringTrigger from '@/components/ui/RecurringTrigger'
 
 export default async function AppLayout({
   children,

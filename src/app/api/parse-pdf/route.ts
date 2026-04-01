@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { parsePdfTransactions } from '@/LogicService/transacciones/parsePdfService'
+import { parsePdfTransactions } from '@/LogicService/secciones/transacciones/parsePdfService'
 
 const MAX_PDF_SIZE = 20 * 1024 * 1024 // 20 MB
 
