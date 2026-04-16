@@ -4,7 +4,7 @@ import DollarCard from '@/components/ui/DollarCard'
 import { DollarSign, RefreshCw, TrendingUp, Info } from 'lucide-react'
 import { format, startOfMonth, endOfMonth } from 'date-fns'
 import { es, enUS } from 'date-fns/locale'
-import { ClassNames } from './page.styles'
+import { ClassNames } from './dolarSection.styles'
 import { cookies } from 'next/headers'
 import { getT, LANG_COOKIE, DEFAULT_LANG, type Lang } from '@/lib/i18n/index'
 

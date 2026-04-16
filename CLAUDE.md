@@ -65,21 +65,29 @@ src/
 │   │   └── ...
 │   └── ui/                 # Componentes reutilizables
 ├── LogicService/           # Lógica de negocio pura por dominio
-│   ├── auth/
-│   ├── transacciones/      # exportService, parsePdfService, etc.
+│   ├── auth/               # authService, debugSessionService
 │   ├── dolar/              # dolarService (dolarapi.com, cache 5min)
-│   ├── categorias/
-│   ├── metas/
-│   ├── recurrentes/
-│   ├── tendencias/
-│   ├── secciones/          # Custom hooks de cada sección
+│   ├── categorias/         # defaultCategoriesService
+│   ├── recurrentes/        # recurringService
+│   ├── tendencias/         # inflacionService
+│   ├── secciones/          # Custom hooks y servicios de cada sección
 │   │   ├── categorias/useCategorias.ts
-│   │   ├── transacciones/useTransacciones.ts
-│   │   └── ...
+│   │   ├── login/useLogin.ts
+│   │   ├── metas/useMetas.ts
+│   │   ├── recurrentes/useRecurrentes.ts
+│   │   ├── register/useRegister.ts
+│   │   ├── reportes/useReportes.ts
+│   │   ├── tendencias/useTendencias.ts
+│   │   └── transacciones/  # exportService, parsePdfService, parseMercadoPagoClient, parseReceiptService, autoCategorizeService, useTransacciones.ts
 │   └── ui/                 # Custom hooks de componentes ui
+│       ├── CategoryForm/useCategoryForm.ts
+│       ├── DollarCard/useDollarCard.ts
+│       ├── ExpenseChart/useExpenseChart.ts
+│       ├── Header/useHeader.ts
+│       ├── RecurringTrigger/useRecurringTrigger.ts
+│       ├── ServiceWorkerRegister/useServiceWorkerRegister.ts
 │       ├── Sidebar/useSidebar.ts
-│       ├── TransactionForm/useTransactionForm.ts
-│       └── ...
+│       └── TransactionForm/useTransactionForm.ts
 └── lib/
     ├── supabase/
     │   ├── client.ts       # createBrowserClient
@@ -97,7 +105,7 @@ Cada ruta protegida sigue esta estructura:
 ```
 components/secciones/[feature]/
   ├── [Feature]Section.tsx        # Componente 'use client' principal
-  └── page.styles.ts              # ClassNames: objeto con clases Tailwind
+  └── [feature]Section.styles.ts  # ClassNames: objeto con clases Tailwind
 
 LogicService/secciones/[feature]/
   └── use[Feature].ts             # Custom hook: estado + queries Supabase
@@ -189,11 +197,18 @@ También existen: `recurring_transactions`, `goals`.
 
 ## Features especiales
 
-### Importación de Excel
+### Importación de Excel y PDF
 - ExcelJS lee `.xlsx` / `.xls`
 - Detecta automáticamente: plantilla propia, extracto bancario, resumen Visa
+- Importa extractos PDF de MercadoPago (`LogicService/transacciones/parseMercadoPagoClient.ts`)
 - Auto-categoriza por keywords (`LogicService/transacciones/autoCategorizeService.ts`)
 - Filtra duplicados antes de insertar
+
+### Metas de ahorro
+- CRUD de metas en ARS o USD con nombre, monto objetivo, fecha límite y color
+- Barra de progreso por meta; metas en USD muestran equivalente en pesos (dólar blue)
+- Resumen global: total de metas, total ahorrado y cuánto falta
+- Hook: `LogicService/secciones/metas/useMetas.ts`
 
 ### OCR de tickets
 - POST `/api/parse-receipt` con imagen (max 8MB)

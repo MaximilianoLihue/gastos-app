@@ -6,6 +6,7 @@ import { createClient } from '@/lib/supabase/client'
 import { Transaction } from '@/lib/types'
 import { exportToExcel, exportToPDF } from '@/LogicService/secciones/transacciones/exportService'
 import { parseMercadoPagoPDF } from '@/LogicService/secciones/transacciones/parseMercadoPagoClient'
+import { guessCategory } from '@/LogicService/secciones/transacciones/autoCategorizeService'
 import { format, parse, isValid, startOfMonth, endOfMonth, subMonths, addMonths } from 'date-fns'
 import { useLang } from '@/lib/i18n/LangContext'
 
@@ -114,27 +115,6 @@ function parseVisaStatement(rows: unknown[][]): VisaRow[] {
   return results
 }
 
-const AUTO_CATEGORY_RULES: { keywords: string[]; category: string; color: string }[] = [
-  { keywords: ['transferencia', 'transf ', 'trnsf', 'acreditacion', 'acreditación', 'extraccion', 'extracción', 'reintegro', 'devolucion', 'devolución', 'mercado pago', 'mercadopago', 'cuenta dni', 'ualá', 'uala', 'brubank', 'naranja x', 'naranjax', 'prex', 'bimo'], category: 'Transferencias', color: '#6366f1' },
-  { keywords: ['uber', 'cabify', 'remis', 'taxi', 'sube', 'colectivo', 'tren', 'subte', 'ypf', 'shell', 'axion', 'nafta', 'combustible', 'peaje'], category: 'Transporte', color: '#3b82f6' },
-  { keywords: ['supermercado', 'disco', 'jumbo', 'carrefour', 'coto', 'dia ', 'vea ', 'walmart', 'vital', 'verduleria', 'almacen'], category: 'Comida', color: '#f97316' },
-  { keywords: ['rappi', 'pedidosya', 'mcdonalds', 'burger king', 'kentucky', 'subway', 'mostaza', 'restaurant', 'pizza', 'sushi', 'delivery'], category: 'Comida', color: '#f97316' },
-  { keywords: ['netflix', 'spotify', 'disney', 'hbo', 'flow', 'paramount', 'steam', 'playstation', 'xbox'], category: 'Entretenimiento', color: '#a855f7' },
-  { keywords: ['farmacia', 'farma', 'drogueria', 'medico', 'doctor', 'clinica', 'hospital', 'osde', 'swiss', 'prepaga', 'obra social'], category: 'Salud', color: '#ec4899' },
-  { keywords: ['edesur', 'edenor', 'metrogas', 'aysa', 'telecom', 'fibertel', 'cablevision'], category: 'Servicios', color: '#eab308' },
-  { keywords: ['alquiler', 'expensas', 'inmobiliaria'], category: 'Vivienda', color: '#14b8a6' },
-  { keywords: ['zara', 'h&m', 'lacoste', 'adidas', 'nike', 'calzado', 'indumentaria', 'falabella'], category: 'Ropa', color: '#f43f5e' },
-  { keywords: ['suscripcion', 'suscripción', 'rescate', 'fima', 'fondo', 'cuotaparte', 'gainvest', 'balanz', 'iol', 'invertironline', 'ppx', 'adcap', 'puente', 'portfolio personal', 'sigma', 'pellegrini', 'premier', 'clase a', 'clase b', 'renta fija', 'renta variable'], category: 'Inversiones', color: '#84cc16' },
-]
-
-function guessCategory(description: string): { category: string; color: string } | null {
-  const lower = description.toLowerCase()
-  for (const rule of AUTO_CATEGORY_RULES) {
-    if (rule.keywords.some(kw => lower.includes(kw))) return { category: rule.category, color: rule.color }
-  }
-  return null
-}
-
 function parseType(value: unknown): 'ingreso' | 'gasto' | null {
   const str = String(value ?? '').toLowerCase().trim()
   if (['ingreso', 'income', 'entrada', 'in'].includes(str)) return 'ingreso'
@@ -184,6 +164,21 @@ async function filterDuplicates(
   return rows.map((r, i) => ({ i, key: txKey(r.date, r.description, r.type, r.amount) }))
     .filter(({ key }) => existingKeys.has(key))
     .map(({ i }) => i)
+}
+
+async function ensureCategoryInCache(
+  supabase: ReturnType<typeof createClient>,
+  userId: string,
+  catCache: Record<string, string>,
+  name: string,
+  type: 'ingreso' | 'gasto',
+  color: string
+): Promise<string> {
+  const key = `${name.toLowerCase()}__${type}`
+  if (catCache[key]) return catCache[key]
+  const { data } = await supabase.from('categories').insert({ user_id: userId, name, type, color }).select('id').single()
+  if (data?.id) catCache[key] = data.id
+  return data?.id ?? ''
 }
 
 // ── Hook ──────────────────────────────────────────────────────────────────────
@@ -271,18 +266,11 @@ export function useTransacciones() {
       const { data: existingCats } = await supabase.from('categories').select('id, name, type').eq('user_id', user.id)
       const catCache: Record<string, string> = {}
       for (const c of existingCats ?? []) catCache[`${c.name.toLowerCase()}__${c.type}`] = c.id
-      const ensureCategory = async (name: string, type: 'ingreso' | 'gasto', color: string): Promise<string> => {
-        const key = `${name.toLowerCase()}__${type}`
-        if (catCache[key]) return catCache[key]
-        const { data } = await supabase.from('categories').insert({ user_id: user.id, name, type, color }).select('id').single()
-        if (data?.id) catCache[key] = data.id
-        return data?.id ?? ''
-      }
       const toInsert: object[] = []
       for (const tx of parsed) {
         let category_id: string | null = null
         const guessed = guessCategory(tx.description)
-        if (guessed) category_id = await ensureCategory(guessed.category, tx.type, guessed.color) || null
+        if (guessed) category_id = await ensureCategoryInCache(supabase, user.id, catCache, guessed.category, tx.type, guessed.color) || null
         toInsert.push({ user_id: user.id, date: tx.date, type: tx.type, amount: tx.amount, description: tx.description, category_id })
       }
       const dupIndexes = new Set(await filterDuplicates(supabase, toInsert as { date: string; description: string | null; type: string; amount: number }[]))
@@ -372,14 +360,17 @@ export function useTransacciones() {
       .then(({ data }) => setAllCategories(data ?? []))
   }, [load])
 
-  // Realtime subscription
+  const loadRef = useRef(load)
+  useEffect(() => { loadRef.current = load }, [load])
+
+  // Realtime subscription — created once; uses ref to always call latest load
   useEffect(() => {
     const channel = supabase
       .channel('transactions-changes')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'transactions' }, () => load())
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'transactions' }, () => loadRef.current())
       .subscribe()
     return () => { supabase.removeChannel(channel) }
-  }, [load])
+  }, [])
 
   async function handleQuickCategory(txId: string, categoryId: string) {
     setQuickCatTx(null)
@@ -464,20 +455,12 @@ export function useTransacciones() {
         const catCache: Record<string, string> = {}
         for (const c of existingCats ?? []) catCache[`${c.name.toLowerCase()}__${c.type}`] = c.id
 
-        const ensureCategory = async (name: string, type: 'ingreso' | 'gasto', color: string) => {
-          const key = `${name.toLowerCase()}__${type}`
-          if (catCache[key]) return catCache[key]
-          const { data } = await supabase.from('categories').insert({ user_id: user.id, name, type, color }).select('id').single()
-          if (data?.id) catCache[key] = data.id
-          return data?.id ?? ''
-        }
-
         const parsed = parseVisaStatement(allRows)
         result.total = parsed.length
         for (const tx of parsed) {
           let category_id: string | null = null
           const guessed = guessCategory(tx.description)
-          if (guessed) category_id = await ensureCategory(guessed.category, tx.type, guessed.color) || null
+          if (guessed) category_id = await ensureCategoryInCache(supabase, user.id, catCache, guessed.category, tx.type, guessed.color) || null
           toInsert.push({ user_id: user.id, date: tx.date, type: tx.type, amount: tx.amount, currency: tx.currency, description: tx.description, category_id })
         }
 
@@ -519,14 +502,6 @@ export function useTransacciones() {
         const catCache: Record<string, string> = {}
         for (const c of existingCats ?? []) catCache[`${c.name.toLowerCase()}__${c.type}`] = c.id
 
-        const ensureCategory = async (name: string, type: 'ingreso' | 'gasto', color: string): Promise<string> => {
-          const key = `${name.toLowerCase()}__${type}`
-          if (catCache[key]) return catCache[key]
-          const { data } = await supabase.from('categories').insert({ user_id: user.id, name, type, color }).select('id').single()
-          if (data?.id) catCache[key] = data.id
-          return data?.id ?? ''
-        }
-
         for (let i = 0; i < dataRows.length; i++) {
           const row = dataRows[i]
           const rowNum = headerRowIndex + i + 2
@@ -541,7 +516,7 @@ export function useTransacciones() {
           let category_id: string | null = null
           if (description) {
             const guessed = guessCategory(description)
-            if (guessed) category_id = await ensureCategory(guessed.category, type, guessed.color)
+            if (guessed) category_id = await ensureCategoryInCache(supabase, user.id, catCache, guessed.category, type, guessed.color)
           }
           toInsert.push({ user_id: user.id, date, type, amount, currency: 'ARS', description, category_id })
         }

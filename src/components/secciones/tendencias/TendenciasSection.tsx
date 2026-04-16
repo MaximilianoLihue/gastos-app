@@ -6,7 +6,7 @@ import {
   LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip,
   ResponsiveContainer, ReferenceLine, Cell, LabelList,
 } from 'recharts'
-import { ClassNames } from './page.styles'
+import { ClassNames } from './tendenciasSection.styles'
 import { useLang } from '@/lib/i18n/LangContext'
 import { useTendencias, CategoryTrend } from '@/LogicService/secciones/tendencias/useTendencias'
 

@@ -3,7 +3,7 @@
 import { Target, Plus, Pencil, Trash2, X, CheckCircle, PiggyBank, Calendar, ChevronUp } from 'lucide-react'
 import { format, differenceInDays, parseISO } from 'date-fns'
 import { enUS, es } from 'date-fns/locale'
-import { ClassNames } from './page.styles'
+import { ClassNames } from './metasSection.styles'
 import { useLang } from '@/lib/i18n/LangContext'
 import { useMetas } from '@/LogicService/secciones/metas/useMetas'
 

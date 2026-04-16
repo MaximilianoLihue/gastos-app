@@ -3,7 +3,7 @@
 import { Category } from '@/lib/types'
 import CategoryForm from '@/components/ui/CategoryForm'
 import { Plus, Pencil, Trash2, Tag } from 'lucide-react'
-import { ClassNames } from './page.styles'
+import { ClassNames } from './categoriasSection.styles'
 import { useT } from '@/lib/i18n/LangContext'
 import { useCategorias } from '@/LogicService/secciones/categorias/useCategorias'
 

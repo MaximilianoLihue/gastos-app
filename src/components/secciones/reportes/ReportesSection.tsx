@@ -11,7 +11,7 @@ import {
   TrendingDown,
   Calendar,
 } from 'lucide-react'
-import { ClassNames } from './page.styles'
+import { ClassNames } from './reportesSection.styles'
 import { useLang } from '@/lib/i18n/LangContext'
 import { useReportes } from '@/LogicService/secciones/reportes/useReportes'
 

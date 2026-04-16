@@ -10,7 +10,7 @@ import {
 } from 'lucide-react'
 import { format, addMonths, startOfMonth, subMonths } from 'date-fns'
 import { es, enUS } from 'date-fns/locale'
-import { ClassNames } from './page.styles'
+import { ClassNames } from './transaccionesSection.styles'
 import { useLang } from '@/lib/i18n/LangContext'
 import { useTransacciones, downloadTemplate, PAGE_SIZE } from '@/LogicService/secciones/transacciones/useTransacciones'
 

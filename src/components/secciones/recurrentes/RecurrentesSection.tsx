@@ -3,7 +3,7 @@
 import { Plus, Pencil, Trash2, RefreshCw, CheckCircle, X, ToggleLeft, ToggleRight, Calendar } from 'lucide-react'
 import { format, parseISO, isBefore } from 'date-fns'
 import { es, enUS } from 'date-fns/locale'
-import { ClassNames } from './page.styles'
+import { ClassNames } from './recurrentesSection.styles'
 import { useLang } from '@/lib/i18n/LangContext'
 import { useRecurrentes } from '@/LogicService/secciones/recurrentes/useRecurrentes'
 

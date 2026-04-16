@@ -17,7 +17,7 @@ import {
   Sparkles,
 } from 'lucide-react'
 import Link from 'next/link'
-import { ClassNames } from './page.styles'
+import { ClassNames } from './dashboardSection.styles'
 import { MonthNav } from './MonthNav'
 
 function formatARS(value: number): string {

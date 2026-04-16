@@ -1,4 +1,5 @@
 export type TransactionType = 'ingreso' | 'gasto'
+export type Currency = 'ARS' | 'USD'
 
 export interface Category {
   id: string
@@ -14,7 +15,7 @@ export interface Transaction {
   user_id: string
   category_id: string | null
   amount: number
-  currency: 'ARS' | 'USD'
+  currency: Currency
   description: string | null
   date: string
   type: TransactionType

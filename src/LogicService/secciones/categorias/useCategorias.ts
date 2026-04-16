@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { Category } from '@/lib/types'
+import { Category, TransactionType } from '@/lib/types'
 
 export function useCategorias() {
   const supabase = createClient()
@@ -11,7 +11,7 @@ export function useCategorias() {
   const [showForm, setShowForm] = useState(false)
   const [editCat, setEditCat] = useState<Category | null>(null)
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null)
-  const [filterType, setFilterType] = useState<'all' | 'ingreso' | 'gasto'>('all')
+  const [filterType, setFilterType] = useState<'all' | TransactionType>('all')
 
   const load = useCallback(async () => {
     setLoading(true)

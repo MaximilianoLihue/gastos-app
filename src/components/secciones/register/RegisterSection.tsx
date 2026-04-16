@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { TrendingUp, Mail, Lock, Loader2, Eye, EyeOff, CheckCircle } from 'lucide-react'
-import { ClassNames } from './page.styles'
+import { ClassNames } from './registerSection.styles'
 import { useT } from '@/lib/i18n/LangContext'
 import { useRegister } from '@/LogicService/secciones/register/useRegister'
 

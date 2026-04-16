@@ -1,8 +1,8 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useMemo } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { Transaction, MonthlyData, CategoryData } from '@/lib/types'
+import { Transaction, MonthlyData, CategoryData, TransactionType } from '@/lib/types'
 import { exportToExcel, exportToPDF } from '@/LogicService/secciones/transacciones/exportService'
 import { format, subMonths, startOfMonth, endOfMonth } from 'date-fns'
 import { es, enUS } from 'date-fns/locale'
@@ -17,7 +17,7 @@ export function useReportes() {
   const [loading, setLoading] = useState(true)
   const [chartType, setChartType] = useState<'bar' | 'line'>('bar')
   const [monthsToShow, setMonthsToShow] = useState(6)
-  const [pieCategory, setPieCategory] = useState<'gasto' | 'ingreso'>('gasto')
+  const [pieCategory, setPieCategory] = useState<TransactionType>('gasto')
 
   const load = useCallback(async () => {
     setLoading(true)
@@ -37,45 +37,44 @@ export function useReportes() {
 
   useEffect(() => { load() }, [load])
 
-  // Monthly chart data
-  const now = new Date()
-  const monthlyData: MonthlyData[] = []
+  const { monthlyData, pieData, totalIngresos, totalGastos, balance, savingsRate } = useMemo(() => {
+    const now = new Date()
+    const monthlyData: MonthlyData[] = []
 
-  for (let i = monthsToShow - 1; i >= 0; i--) {
-    const monthDate = subMonths(now, i)
-    const monthKey = format(monthDate, 'yyyy-MM')
-    const monthLabel = format(monthDate, 'MMM yy', { locale: dateLocale })
+    for (let i = monthsToShow - 1; i >= 0; i--) {
+      const monthDate = subMonths(now, i)
+      const monthKey = format(monthDate, 'yyyy-MM')
+      const monthLabel = format(monthDate, 'MMM yy', { locale: dateLocale })
+      const monthTxs = transactions.filter(tx => tx.date.substring(0, 7) === monthKey)
+      const ingresos = monthTxs.filter(tx => tx.type === 'ingreso').reduce((sum, tx) => sum + Number(tx.amount), 0)
+      const gastos = monthTxs.filter(tx => tx.type === 'gasto').reduce((sum, tx) => sum + Number(tx.amount), 0)
+      monthlyData.push({ month: monthLabel, ingresos, gastos })
+    }
 
-    const monthTxs = transactions.filter(tx => tx.date.substring(0, 7) === monthKey)
-    const ingresos = monthTxs.filter(tx => tx.type === 'ingreso').reduce((sum, tx) => sum + Number(tx.amount), 0)
-    const gastos = monthTxs.filter(tx => tx.type === 'gasto').reduce((sum, tx) => sum + Number(tx.amount), 0)
+    const categoryMap = new Map<string, { value: number; color: string }>()
+    transactions
+      .filter(tx => tx.type === pieCategory && tx.category)
+      .forEach(tx => {
+        const key = tx.category!.name
+        const existing = categoryMap.get(key)
+        if (existing) {
+          existing.value += Number(tx.amount)
+        } else {
+          categoryMap.set(key, { value: Number(tx.amount), color: tx.category!.color })
+        }
+      })
 
-    monthlyData.push({ month: monthLabel, ingresos, gastos })
-  }
+    const pieData: CategoryData[] = Array.from(categoryMap.entries())
+      .map(([name, { value, color }]) => ({ name, value, color }))
+      .sort((a, b) => b.value - a.value)
 
-  // Pie chart data
-  const categoryMap = new Map<string, { value: number; color: string }>()
-  transactions
-    .filter(tx => tx.type === pieCategory && tx.category)
-    .forEach(tx => {
-      const key = tx.category!.name
-      const existing = categoryMap.get(key)
-      if (existing) {
-        existing.value += Number(tx.amount)
-      } else {
-        categoryMap.set(key, { value: Number(tx.amount), color: tx.category!.color })
-      }
-    })
+    const totalIngresos = transactions.filter(tx => tx.type === 'ingreso').reduce((sum, tx) => sum + Number(tx.amount), 0)
+    const totalGastos = transactions.filter(tx => tx.type === 'gasto').reduce((sum, tx) => sum + Number(tx.amount), 0)
+    const balance = totalIngresos - totalGastos
+    const savingsRate = totalIngresos > 0 ? Math.max(0, ((totalIngresos - totalGastos) / totalIngresos) * 100) : 0
 
-  const pieData: CategoryData[] = Array.from(categoryMap.entries())
-    .map(([name, { value, color }]) => ({ name, value, color }))
-    .sort((a, b) => b.value - a.value)
-
-  // Summary stats
-  const totalIngresos = transactions.filter(tx => tx.type === 'ingreso').reduce((sum, tx) => sum + Number(tx.amount), 0)
-  const totalGastos = transactions.filter(tx => tx.type === 'gasto').reduce((sum, tx) => sum + Number(tx.amount), 0)
-  const balance = totalIngresos - totalGastos
-  const savingsRate = totalIngresos > 0 ? Math.max(0, ((totalIngresos - totalGastos) / totalIngresos) * 100) : 0
+    return { monthlyData, pieData, totalIngresos, totalGastos, balance, savingsRate }
+  }, [transactions, monthsToShow, pieCategory, dateLocale])
 
   function handleExportExcel() {
     exportToExcel(transactions, `reporte_${monthsToShow}meses`)

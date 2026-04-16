@@ -2,14 +2,14 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { RecurringTransaction, Category } from '@/lib/types'
+import { RecurringTransaction, Category, TransactionType } from '@/lib/types'
 import { format } from 'date-fns'
 import { useLang } from '@/lib/i18n/LangContext'
 
 export interface RecurrenteFormState {
   description: string
   amount: string
-  type: 'ingreso' | 'gasto'
+  type: TransactionType
   category_id: string
   day_of_month: number
   end_date: string

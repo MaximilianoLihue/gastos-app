@@ -37,7 +37,17 @@
       "Bash(mv src/components/secciones/login/useLogin.ts src/LogicService/secciones/login/)",
       "Bash(mv src/components/secciones/metas/useMetas.ts src/LogicService/secciones/metas/)",
       "Bash(mv src/components/secciones/recurrentes/useRecurrentes.ts src/LogicService/secciones/recurrentes/)",
-      "Bash(mv src/components/secciones/register/useRegister.ts src/LogicService/secciones/register/)"
+      "Bash(mv src/components/secciones/register/useRegister.ts src/LogicService/secciones/register/)",
+      "Bash(mv categorias/page.styles.ts categorias/categoriasSection.styles.ts)",
+      "Bash(mv dashboard/page.styles.ts dashboard/dashboardSection.styles.ts)",
+      "Bash(mv dolar/page.styles.ts dolar/dolarSection.styles.ts)",
+      "Bash(mv login/page.styles.ts login/loginSection.styles.ts)",
+      "Bash(mv metas/page.styles.ts metas/metasSection.styles.ts)",
+      "Bash(sed -i \"s|from ''./page.styles''|from ''./categoriasSection.styles''|g\" src/components/secciones/categorias/CategoriasSection.tsx)",
+      "Bash(sed -i \"s|from ''./page.styles''|from ''./dashboardSection.styles''|g\" src/components/secciones/dashboard/DashboardSection.tsx)",
+      "Bash(sed -i \"s|from ''./page.styles''|from ''./dolarSection.styles''|g\" src/components/secciones/dolar/DolarSection.tsx)",
+      "Bash(sed -i \"s|from ''./page.styles''|from ''./loginSection.styles''|g\" src/components/secciones/login/LoginSection.tsx)",
+      "Bash(sed -i \"s|from ''./page.styles''|from ''./metasSection.styles''|g\" src/components/secciones/metas/MetasSection.tsx)"
     ]
   }
 }

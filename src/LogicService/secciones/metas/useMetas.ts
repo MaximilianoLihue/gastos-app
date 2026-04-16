@@ -3,6 +3,8 @@
 import { useState, useEffect, useCallback } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useLang } from '@/lib/i18n/LangContext'
+import { DolarRate } from '@/lib/types'
+import { fetchDolarRate } from '@/LogicService/dolar/dolarService'
 
 export interface Goal {
   id: string
@@ -14,11 +16,6 @@ export interface Goal {
   color: string
   currency: 'ARS' | 'USD'
   created_at: string
-}
-
-export interface DolarRate {
-  compra: number
-  venta: number
 }
 
 export interface MetaFormState {
@@ -67,10 +64,7 @@ export function useMetas() {
   const [blueRate, setBlueRate] = useState<DolarRate | null>(null)
 
   useEffect(() => {
-    fetch('https://dolarapi.com/v1/dolares/blue')
-      .then(r => r.json())
-      .then(d => setBlueRate({ compra: d.compra, venta: d.venta }))
-      .catch(() => {})
+    fetchDolarRate('blue').then(d => setBlueRate(d)).catch(() => {})
   }, [])
 
   const showToast = (msg: string) => {

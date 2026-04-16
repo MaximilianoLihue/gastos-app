@@ -15,7 +15,7 @@ const AUTO_CATEGORY_RULES: { keywords: string[]; category: string; color: string
   { keywords: ['freelance', 'honorarios', 'factura'], category: 'Freelance', color: '#14b8a6' },
 ]
 
-function guessCategory(description: string): { category: string; color: string } | null {
+export function guessCategory(description: string): { category: string; color: string } | null {
   const lower = description.toLowerCase()
   for (const rule of AUTO_CATEGORY_RULES) {
     if (rule.keywords.some(kw => lower.includes(kw))) {

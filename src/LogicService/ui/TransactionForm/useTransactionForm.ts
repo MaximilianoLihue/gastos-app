@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { Transaction, Category, TransactionType } from '@/lib/types'
 import { format } from 'date-fns'
@@ -23,18 +23,18 @@ export function useTransactionForm({ transaction, onSuccess }: UseTransactionFor
     category_id: transaction?.category_id ?? '',
   })
 
-  useEffect(() => {
-    loadCategories()
-  }, [form.type])
-
-  async function loadCategories() {
+  const loadCategories = useCallback(async () => {
     const { data } = await supabase
       .from('categories')
       .select('*')
       .eq('type', form.type)
       .order('name')
     setCategories(data ?? [])
-  }
+  }, [form.type])
+
+  useEffect(() => {
+    loadCategories()
+  }, [loadCategories])
 
   function handleTypeChange(type: TransactionType) {
     setForm((prev) => ({ ...prev, type, category_id: '' }))

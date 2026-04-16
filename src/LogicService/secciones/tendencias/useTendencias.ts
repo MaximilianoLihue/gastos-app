@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useMemo } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { Transaction } from '@/lib/types'
 import { format, subMonths, startOfMonth, endOfMonth } from 'date-fns'
@@ -98,56 +98,51 @@ export function useTendencias() {
   useEffect(() => { loadTransactions() }, [loadTransactions])
   useEffect(() => { loadInflacion() }, [loadInflacion])
 
-  // ── Category trends ────────────────────────────────────────────────────────
-
-  function sumByCategory(txs: Transaction[]) {
-    const map = new Map<string, { amount: number; color: string }>()
-    for (const tx of txs) {
-      if (!tx.category) continue
-      const key = tx.category.name
-      const existing = map.get(key)
-      if (existing) {
-        existing.amount += Number(tx.amount)
-      } else {
-        map.set(key, { amount: Number(tx.amount), color: tx.category.color })
+  const { subieron, bajaron, totalCurr, totalPrev, totalPctChange } = useMemo(() => {
+    function sumByCategory(txs: Transaction[]) {
+      const map = new Map<string, { amount: number; color: string }>()
+      for (const tx of txs) {
+        if (!tx.category) continue
+        const key = tx.category.name
+        const existing = map.get(key)
+        if (existing) {
+          existing.amount += Number(tx.amount)
+        } else {
+          map.set(key, { amount: Number(tx.amount), color: tx.category.color })
+        }
       }
+      return map
     }
-    return map
-  }
 
-  const currBycat = sumByCategory(currMonthTxs)
-  const prevBycat = sumByCategory(prevMonthTxs)
+    const currBycat = sumByCategory(currMonthTxs)
+    const prevBycat = sumByCategory(prevMonthTxs)
+    const allCatNames = new Set([...currBycat.keys(), ...prevBycat.keys()])
 
-  const allCatNames = new Set([...currBycat.keys(), ...prevBycat.keys()])
-
-  const trends: CategoryTrend[] = []
-  for (const name of allCatNames) {
-    const curr = currBycat.get(name)
-    const prev = prevBycat.get(name)
-    const currAmount = curr?.amount ?? 0
-    const prevAmount = prev?.amount ?? 0
-    const color = curr?.color ?? prev?.color ?? '#6b7280'
-
-    // Skip if both are zero or if only new this month (no prev to compare)
-    if (prevAmount === 0 && currAmount === 0) continue
-    if (prevAmount === 0) {
-      // New category this month — treat as +100% or infinity
-      trends.push({ name, color, prevAmount: 0, currAmount, pctChange: 100 })
-      continue
+    const trends: CategoryTrend[] = []
+    for (const name of allCatNames) {
+      const curr = currBycat.get(name)
+      const prev = prevBycat.get(name)
+      const currAmount = curr?.amount ?? 0
+      const prevAmount = prev?.amount ?? 0
+      const color = curr?.color ?? prev?.color ?? '#6b7280'
+      if (prevAmount === 0 && currAmount === 0) continue
+      if (prevAmount === 0) {
+        // New category this month — no previous baseline to compare against
+        trends.push({ name, color, prevAmount: 0, currAmount, pctChange: 100 })
+        continue
+      }
+      const pctChange = ((currAmount - prevAmount) / prevAmount) * 100
+      trends.push({ name, color, prevAmount, currAmount, pctChange })
     }
-    const pctChange = ((currAmount - prevAmount) / prevAmount) * 100
-    trends.push({ name, color, prevAmount, currAmount, pctChange })
-  }
 
-  // Sort: subieron = highest pct first, bajaron = lowest pct first
-  const subieron = trends.filter(t => t.pctChange > 0).sort((a, b) => b.pctChange - a.pctChange).slice(0, 6)
-  const bajaron = trends.filter(t => t.pctChange < 0).sort((a, b) => a.pctChange - b.pctChange).slice(0, 6)
+    const subieron = trends.filter(t => t.pctChange > 0).sort((a, b) => b.pctChange - a.pctChange).slice(0, 6)
+    const bajaron = trends.filter(t => t.pctChange < 0).sort((a, b) => a.pctChange - b.pctChange).slice(0, 6)
+    const totalCurr = currMonthTxs.reduce((s, tx) => s + Number(tx.amount), 0)
+    const totalPrev = prevMonthTxs.reduce((s, tx) => s + Number(tx.amount), 0)
+    const totalPctChange = totalPrev > 0 ? ((totalCurr - totalPrev) / totalPrev) * 100 : null
 
-  // ── Overall comparison ─────────────────────────────────────────────────────
-
-  const totalCurr = currMonthTxs.reduce((s, tx) => s + Number(tx.amount), 0)
-  const totalPrev = prevMonthTxs.reduce((s, tx) => s + Number(tx.amount), 0)
-  const totalPctChange = totalPrev > 0 ? ((totalCurr - totalPrev) / totalPrev) * 100 : null
+    return { subieron, bajaron, totalCurr, totalPrev, totalPctChange }
+  }, [currMonthTxs, prevMonthTxs])
 
   return {
     loading,
